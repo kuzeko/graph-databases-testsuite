@@ -1,0 +1,52 @@
+run.sh
+
+# editors
+*.sw?
+~*
+*~
+
+#MacOS
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+#Python
+*~
+*.pyc
+
+# Python libs
+.venv
+
+# Datasets (TB of data)
+#runtime/data/
+
+# Logs (commit only collected)
+timeout.log
+docker.log
+test.log
+runtime/results
+runtime/errors
+runtime/data
+runtime/logs/*
+
+# Ignoring presampled, use `git add -f` when really want to add them.
+runtime/presampled
+
+# Ignoring COLLECTED, use `git add -f` when really want to add them.
+COLLECTED
