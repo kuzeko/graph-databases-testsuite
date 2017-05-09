@@ -1,57 +1,100 @@
 # RUN EXPERIMENTS
 
-The `Makefile` allows to clean th directories and to collect results, 
-
-- `make collect`: moves results and log into `COLLECTED` folder
-- `make clean`: cleans up environment, stopping containers, removing unused ones, for next experiment (collects also)
-- `make purge`: like clean but remove (not collect) the results
-
-The `test.py` is in charge of spawning the docker environment, mounting the directories and sending commands to execute the queries. 
-The most common options are
-
-- `'-d'` enables the debug messages
-- `'-v'` makes host file-system resources available to the docker image
-- `'-s'` points to a settings file, which lists datasets and queries, if no settings is provided it will try with all that exists in the runtime folder
-
-
 ## Example
 
 ```bash
 make clean && python test.py -d -i dbtrento/gremlin-neo4j -v /dfs/vol3/ -e JAVA_OPTS="-Xms1G -Xmn128M -Xmx120G"
 ```
 
-### Environment Variables
+## The Commands
+
+The `Makefile` allows to clean the directories and to collect results, 
+
+
+**Results**
+
+  - `follow`:     follows all logs stream
+  - `follow_short`:   follows result and error logs stream
+  - `collect`:    move results and log into `COLLECTED` folder
+  - `rm_log`:     remove logs, but do not touch containers
+  - `clean`:      clean up environement for next experiment
+  - `purge`:      like clean but remove (not collect) the results
+
+**Containers management command**
+
+  - `rm_dead`:    Remove dead containers
+  - `stop`:       Stop all running containers
+  - `kill`:       Kill all running containers
+
+**Image management command**
+
+  - `rm_notag`:   Remove images without a tag
+  - `rm_noname`:  Remove images without a name
+
+**Dangerous management command**
+
+   - `destroy`:    Reset the docker installation.
+                     `rm -rf` images and containers
+
+
+
+The `test.py` is in charge of spawning the docker enviroment, mounting the directories and sending commands to execute the queries. 
+The most common options are
+
+- `'-d'` enables the debug messages
+- `'-v'` makes host filesystem resources available to the docker image
+- `'-s'` points to a settings file, which lists datasets and queries, if no settings is provided it will try with all that exists in the runtime folder
+
+
+
+## Environment Variables
 
 Use `-e` to specify environment variables, e.g., `JAVA_OPTIONS` 
 
-`-e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G -XX:+UseG1GC'`
+~~~bash
+-e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G -XX:+UseG1GC'`
+~~~
 
 Different GDBs need different options, those are the known ones
+
+
+* For Neo4j  & Sparksee: set `JAVA_OPTIONS`
+ 
+    ~~~bash
+    -e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G  -XX:+UseG1GC'
+    ~~~
+
 
 * OrientDB: we normalized java options variables in scripts, so it only needs `JAVA_OPTIONS`
 
 	```bash
     -e JAVA_OPTIONS='-Xms4g -Xmx20g -XX:+UseG1GC -Dstorage.diskCache.bufferSize=102400'
-    #If you've got more than 32676/#{CPUs} labels set: 
+    ```
+    
+   If you've got more than `32676/#{CPUs}` labels, e.g., with 4 CPU it is `8169`,  set: 
+   
+    ```bash
     -e MINIMUMCLUSTERS=true
 	```
-                
+
 * Sparksee: set `JAVA_OPTIONS`
  
 	```bash
-	-e JAVA_OPTIONS='-Xmx120g -XX:+UseG1GC '
+	-e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120g -XX:+UseG1GC '
 	```
 
 * Titan (both versions) never set `JAVA_OPTIONS`, use `TITAN_JAVA_OPTS` as follows:
 
 	```bash
+    -e USE_INDEX=true     # activate indexes in loading phase
+
     -e ALT_GET_LID=true   # use client side iteration to filter over nodes label
     -e TITAN_JAVA_OPTS='-Xms4G -Xmx120G -XX:+UseG1GC \
                         -Dcassandra.jmx.local.port=9999 -Dcom.sun.management.jmxremote.port=9999\
                         -Dcom.sun.management.jmxremote.authenticate=false'
     ```
 
-* Blazegraph:  
+* Blazegraph:  set `JAVA_OPTIONS`
 
 	```bash
     -e  JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G -XX:MaxDirectMemorySize=60000m -XX:+UseG1GC'
@@ -61,10 +104,12 @@ Different GDBs need different options, those are the known ones
 **Also consider for all the above to provide these additional parameters**
 
 ```bash        
--XX:-UseGCOverheadLimit -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:NewSize=6g -XX:+CMSParallelRemarkEnabled -XX:+ParallelRefProcEnabled -XX:+CMSClassUnloadingEnabled
+-XX:-UseGCOverheadLimit -XX:+UseConcMarkSweepGC -XX:+UseParNewGC  \
+-XX:NewSize=6g  -XX:+CMSParallelRemarkEnabled -XX:+ParallelRefProcEnabled \
+-XX:+CMSClassUnloadingEnabled
 ```
 
-### Symlinks and Folders
+## Symlinks and Folders
 When loading you can use symlinks to avoid copy the dataset around.
 The typical use case is to create a symlink to the dataset file inside the `runtime/data` folder.
 
@@ -81,7 +126,7 @@ This will create a file called `A.json` inside `runtime/data` which will link to
 
 Then start the script with
 
-```bash 
+```bash
 python test.py -d -i dbtrento/gremlin-neo4j  -v /datastore [...] 
 ```
 
@@ -93,7 +138,7 @@ When running queries - i.e., not loading - it’s enough to have an empty file a
 
 If **only** the loading phase is needed one could provide the `-l` flag to the test script, i.e., 
 
-```bash 
+```bash
 python test.py -d -l -i dbtrento/gremlin-neo4j  -v /datastore [...] 
 ```
 
@@ -138,30 +183,38 @@ The `gremlin.sh` console script is invoked to execute the file created in this w
 For range parameters queries are executed twice.
 Once, in isolation for every single parameter combination, i.e., once with `BFS_DEPTH=2` and `SID=0`, once with `BFS_DEPTH=2` and `SID=1` and so on.
 Then again in `BATCH_MODE`, when the `BFS_DEPTH` is kept and all the parameters for `SID` are tested one after the other in random order.
-In this second case queries are not run in isolation, but in a single batch. 
- 
+In this second case queries are not run in isolation, but in a single batch.
+
 The `BATCH_VAR` variable inside `test.py` lists the variables that are eligible to be run inside a batch.
 
 
 ## Logging
 
-By default the `test.py` script creates 5 log files:
-  - `docker.log` contains the output of the docker image
-  - `timeout.log`  contains informations about executions timing out.
+Every execution poduces different log files:
+By default the `test.py` script creates 3 files:
+
+
+  - `docker.log` contains the output of the docker image.
+
   - `test.log`  contains the content of the groovy scripts that are run.
     By default contains subprocess command stdout and stderr,
     when in debug mode contains also a copy of each `/tmp/query` that is executed.
-  - `exp/errors`
+
+
+  - `timeout.log`  contains informations about executions timing out.
+
+  - `runtime/errors`
 	Contains the stderr stream from gremlin.sh and also the info log from our scripts (we do not want to pollute the results file)
-  - `exp/results`
+
+  - `runtime/results`
 	A simil-CSV, containing the timing of the query. A first set of columns is common to all the queries, for some, follows additional fields useful for stats.
 	It is not technically a valid CSV since not all the rows have the same number of columns.
-	In debug mode it contains also all the stack trace and errors messages from java, sometime more useful than the one in errors to debug. It’s not clear why it does not logs to stderr only.
+		In debug mode it contains also all the stack trace and errors messages from java, sometime more useful than the one in errors to `docker.log`.
 
 
 ## ALL CONFIGS SHOULD BE IN /runtime/confs
 
-- Gremlin Tp2 & Tp3 comptibility Docs
+- Gremlin Tp2 & Tp3 compatibility Docs
   * http://tinkerpop.apache.org/docs/current/reference/#_tinkerpop2_data_migration
   * http://tinkerpop.apache.org/docs/current/reference/#sugar-plugin
   * http://tinkerpop.apache.org/javadocs/current/full/org/apache/tinkerpop/gremlin/structure/Graph.html
@@ -173,7 +226,11 @@ User running the commands needs to have permissions to interact with the docker 
 Typically it's sufficient for it to be be member of the 'docker' group.
 
 - Caveats:
-  * In order to kill not responding queries with python2 we need 'subprocess32'.
-      `$ pip install -r requirements.txt`
+  * In order to kill not respondiq queries with python2 we need 'subprocess32'.
+
+    ~~~bash
+    $ pip install -r requirements.txt
+    ~~~
+
   * Sparksee requires a valid license to use all the resources available.
     Please provide a valid license editing `runtime/confs/sparksee.cfg`.
