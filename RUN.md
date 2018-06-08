@@ -3,7 +3,10 @@
 ## Example
 
 ```bash
-make clean && python test.py -d -i dbtrento/gremlin-neo4j -v /dfs/vol3/ -e JAVA_OPTS="-Xms1G -Xmn128M -Xmx120G"
+make clean && python test.py -d \
+	-i dbtrento/gremlin-neo4j \
+	-v /dfs/vol3/ \
+	-e JAVA_OPTS="-Xms1G -Xmn128M -Xmx120G"
 ```
 
 ## The Commands
@@ -13,11 +16,11 @@ The `Makefile` allows to clean the directories and to collect results,
 
 **Results**
 
-  - `follow`:     follows all logs stream
-  - `follow_short`:   follows result and error logs stream
-  - `collect`:    move results and log into `COLLECTED` folder
+  - `follow`:     follows (prints to screen) all logs stream
+  - `follow_short`:   follows result and error logs streams only
+  - `collect`:    move results and log into the `COLLECTED` folder
   - `rm_log`:     remove logs, but do not touch containers
-  - `clean`:      clean up environement for next experiment
+  - `clean`:      clean up environement for next experiment (deletes containers)
   - `purge`:      like clean but remove (not collect) the results
 
 **Containers management command**
@@ -38,12 +41,13 @@ The `Makefile` allows to clean the directories and to collect results,
 
 
 
-The `test.py` is in charge of spawning the docker enviroment, mounting the directories and sending commands to execute the queries. 
+The `test.py` script is in charge of spawning the docker enviroment, mounting the directories and sending commands to execute the queries. 
 The most common options are
 
 - `'-d'` enables the debug messages
 - `'-v'` makes host filesystem resources available to the docker image
 - `'-s'` points to a settings file, which lists datasets and queries, if no settings is provided it will try with all that exists in the runtime folder
+- `'-h'` to get the help message with the full list of parameters
 
 
 
@@ -55,51 +59,45 @@ Use `-e` to specify environment variables, e.g., `JAVA_OPTIONS`
 -e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G -XX:+UseG1GC'`
 ~~~
 
-Different GDBs need different options, those are the known ones
+Different GDBs need different options, below are the known ones
 
 
 * For Neo4j  & Sparksee: set `JAVA_OPTIONS`
- 
-    ~~~bash
+
+    ```bash
     -e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G  -XX:+UseG1GC'
-    ~~~
+    ```
 
 
 * OrientDB: we normalized java options variables in scripts, so it only needs `JAVA_OPTIONS`
 
-	```bash
+    ```bash
     -e JAVA_OPTIONS='-Xms4g -Xmx20g -XX:+UseG1GC -Dstorage.diskCache.bufferSize=102400'
     ```
     
-   If you've got more than `32676/#{CPUs}` labels, e.g., with 4 CPU it is `8169`,  set: 
-   
+   If you've got more than `32676/#{CPUs}` labels, e.g., with 4 CPU, if your dataset contains more than `8169`,  set: 
+
     ```bash
     -e MINIMUMCLUSTERS=true
-	```
-
-* Sparksee: set `JAVA_OPTIONS`
- 
-	```bash
-	-e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120g -XX:+UseG1GC '
-	```
+    ```
 
 * Titan (both versions) never set `JAVA_OPTIONS`, use `TITAN_JAVA_OPTS` as follows:
 
-	```bash
+  ```bash
     -e USE_INDEX=true     # activate indexes in loading phase
-
+  
     -e ALT_GET_LID=true   # use client side iteration to filter over nodes label
     -e TITAN_JAVA_OPTS='-Xms4G -Xmx120G -XX:+UseG1GC \
                         -Dcassandra.jmx.local.port=9999 -Dcom.sun.management.jmxremote.port=9999\
                         -Dcom.sun.management.jmxremote.authenticate=false'
-    ```
+  ```
 
 * Blazegraph:  set `JAVA_OPTIONS`
 
-	```bash
+  ```bash
     -e  JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G -XX:MaxDirectMemorySize=60000m -XX:+UseG1GC'
     -e ALT_GET_LID=true   # use client side iteration to filter over nodes label
-	```
+  ```
 
 **Also consider for all the above to provide these additional parameters**
 
@@ -130,8 +128,8 @@ Then start the script with
 python test.py -d -i dbtrento/gremlin-neo4j  -v /datastore [...] 
 ```
 
-**The dataset files are needed only the first the image is created so the data is loaded in the database**.
-When running queries - i.e., not loading - it’s enough to have an empty file as placeholder for the dataset or not file at all when `settings.json` is used.
+**The dataset files are needed only the first time the image is created so the data is loaded in the database**.
+When running queries - i.e., not loading - it’s enough to have an empty file as placeholder for the dataset or no file at all when `settings.json` is used.
 
 
 ##  Loading Phase
@@ -145,15 +143,15 @@ python test.py -d -l -i dbtrento/gremlin-neo4j  -v /datastore [...]
 Otherwise the system will automatically take action.
 
 
-When an image is executed for the first time it has to read the data from a file and import it into the database system, and this image is then saved.
+When an image is executed for the first time it has to read the data from a file and import it into the database system within the container, and this image is then saved.
 This means that for each database and dataset combination we will create a docker image.
 Queries will run inside such docker image, but the status after the query execution will be erased, so that each query is run on a clean slate.
 
-Some graph databases are not able to support loading through gremlin, for those different technique of loading are in place, called *Native Loading* as they usually use built-in tools.
+Some graph databases are not able to support loading through gremlin, for those different techniques of loading are in place, called *Native Loading* as they usually use built-in tools.
 Those are ArangoDB and OrientDB.
-Blazegraph instead uses Tinkerpop3 code, also for the loading.
+Blazegraph instead uses Tinkerpop3 code, also for the loading (but with some special option activated).
 
-The load phase in `test.py` will start the database base image and run the /`loader.groovy` query or the native process, once the loading process has been completed, the `sampler.groovy` will retrieve `LID` for that database, if no sample exists for that dataset then also sampling is performed.
+The load phase in `test.py` will start the database base image and run the /`loader.groovy` query or the native process, once the loading process has been completed, the `sampler.groovy` will retrieve `LID` for that database to be used for some of the queries, if no sample exists for that dataset then also sampling is performed.
 Then it will stop the container and commit it's state. 
 
 
@@ -234,3 +232,15 @@ Typically it's sufficient for it to be be member of the 'docker' group.
 
   * Sparksee requires a valid license to use all the resources available.
     Please provide a valid license editing `runtime/confs/sparksee.cfg`.
+
+## Advanced functionalities ##
+Scenario:
+- Run some queries (Q2,...,Q10) within the (altered) environment of another query (Q1).
+_I.e._ build an image from the result of a query.
+
+1) Configure `settings.json` to run only _Q1_.
+2) Execute test.py with the following flag `-c a_suffix`. 
+   Please note suffix must respect docker images name format.
+3) Reconfigure `settings.json` to run _Q2,...,Q10_.
+4) Execute test.py with the following flag `-x a_suffix`.
+

@@ -1,6 +1,10 @@
+#META:SID=[0-10]
+
 SID = System.env.get("SID").toInteger();
+
 def execute_query(g,id,i,ORDER_j,DATABASE,DATASET,QUERY,ITERATION,OBJECT_ARRAY,SID,property_name){
     v = g.v(id);
+
     t = System.nanoTime();
     v.removeProperty(property_name);
     if (!SKIP_COMMIT) {
@@ -12,9 +16,12 @@ def execute_query(g,id,i,ORDER_j,DATABASE,DATASET,QUERY,ITERATION,OBJECT_ARRAY,S
     }
     exec_time = System.nanoTime() - t;
     size = v.map().size();
+
+    //DATABASE,DATASET,QUERY,SID,ITERATION,ORDER,TIME,OUTPUT,PARAMETER1(NODE),PARAMETER2(PROPERTY)
     result_row = [ DATABASE, DATASET, QUERY, String.valueOf(SID), ITERATION, String.valueOf(ORDER_j), String.valueOf(exec_time),size, String.valueOf(OBJECT_ARRAY[i]), String.valueOf(property_name)];
     println result_row.join(',');
 }
+
 if (SID == NODE_LID_ARRAY.size()) {
     order_j = 1;
     for (i in RAND_ARRAY) {
@@ -24,3 +31,5 @@ if (SID == NODE_LID_ARRAY.size()) {
 } else {
     execute_query(g,NODE_LID_ARRAY[SID],SID,0,DATABASE,DATASET,QUERY,ITERATION,NODE_ARRAY,SID,uid_field);
 }
+
+//g.shutdown();

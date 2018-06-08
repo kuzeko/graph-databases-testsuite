@@ -4,14 +4,14 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-if [[ -z ${JAVA_OPTS+x} ]]; then
+if [[ -z ${JAVA_OPTIONS+x} ]]; then
 
-   echo "NO JAVA_OPTS SET TO BLAZEGRAPH - SETTING DEFAULT"
-   export JAVA_OPTS=-Xmx8g
+   echo "NO JAVA_OPTIONS SET TO BLAZEGRAPH - SETTING DEFAULT"
+   export JAVA_OPTIONS='-Xms4g -Xmn128M -Xmx120g'
 
 fi
 
-echo "JAVA_OPTS=$JAVA_OPTS"
+echo "JAVA_OPTIONS =$JAVA_OPTIONS"
 
 export NATIVE_LOADING=True
 
@@ -35,7 +35,7 @@ if [[ "$QUERY" == *loader.groovy ]]; then
     echo "Loading Configuration Done!"  >> ${RUNTIME_DIR}/errors
 
     ${RUNTIME_DIR}/tp3/header.groovy.sh > /tmp/loader.groovy
-    sed 's/#BULK//g'  ${RUNTIME_DIR}/tp3/loader.groovy |  grep -v '^#' >>  /tmp/loader.groovy
+    sed 's/#BLAZE//g'  ${RUNTIME_DIR}/tp3/loader.groovy |  grep -v '^#' >>  /tmp/loader.groovy
     #echo "graph.close()" >> /tmp/loader.groovy
     echo 'System.err.println("Close")' >> /tmp/loader.groovy
     echo "System.exit(0)" >> /tmp/loader.groovy

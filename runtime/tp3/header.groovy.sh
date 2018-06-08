@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#
-
 # Shared header:
 #  connect to current engine, or open current database file from proper Class.
 #  provides _g_ : greamlin graph object for querying.
@@ -22,7 +20,7 @@ imports=(
     ["arangodb"]='import com.arangodb.blueprints.*;import com.arangodb.blueprints.client.*;'
     ["neo4j-tp3"]=''
     ["titan-tp3"]='import com.thinkaurelius.titan.core.TitanFactory; import org.apache.log4j.*; SugarLoader.load() '
-
+    ["janus-tp3"]='org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader.load();'
 )
 
 # Commands should be common -> DATABASE
@@ -36,7 +34,8 @@ commands=(
     ["gremlin-blazegraph"]='repo = BlazegraphRepositoryProvider.open(DB_FILE + ".jnl", true); graph = BlazeGraphEmbedded.open(repo); g = graph.traversal();'
     ["gremlin-neo4j-tp3"]='graph = Neo4jGraph.open(DB_FILE); g = graph.traversal()'
     ["gremlin-titan-tp3"]='LogManager.getRootLogger().setLevel(Level.WARN); TITAN_PROPERTIES=System.env.get("TITAN_PROPERTIES"); graph=TitanFactory.open(TITAN_PROPERTIES); g = graph.traversal()'
-
+    ["gremlin-janus-tp3"]='LogManager.getRootLogger().setLevel(Level.WARN); JANUS_PROPERTIES=System.env.get("JANUS_PROPERTIES"); graph=JanusGraphFactory.open(JANUS_PROPERTIES); g = graph.traversal()'
+    ["gremlin-pg"]='graph = SqlgGraph.open("/runtime/confs/sqlg.properties"); g = graph.traversal();'
 )
 
 if [[ -v DEBUG ]]; then
@@ -54,6 +53,10 @@ cat<<EOF
 import groovy.json.JsonSlurper
 import groovy.json.*
 import java.nio.file.Paths
+
+// For MD5
+import java.security.MessageDigest;
+import javax.xml.bind.DatatypeConverter;
 
 EOF
 
@@ -77,8 +80,6 @@ DATASET = System.env.get("DATASET");              // path
 QUERY = System.env.get("QUERY");                  // path
 ITERATION = System.env.get("ITERATION");          // env variable
 
-ESCAPE_LABELS = DATABASE == 'gremlin-orientdb'
-
 
 // -- MUST_CONVERT
 // always: always
@@ -87,6 +88,8 @@ ESCAPE_LABELS = DATABASE == 'gremlin-orientdb'
 
 // TODO: pass it from outside
 ESCAPE_LABELS = DATABASE == 'gremlin-orientdb'
+HASH_LABELS = DATABASE == 'gremlin-pg' && !DATASET.contains('social')
+
 switch (DATABASE) {
   case 'gremlin-sparksee':
     // It stores all the instances as the biggest one (per field):
@@ -150,7 +153,7 @@ if (g == null) {
   System.err.println("graph object is not initialized")
   System.exit(1)
 }
-System.err.println("[NOW] $DATABASE  $QUERY");
+System.err.println("[NOW] $DATABASE  $QUERY $DATASET");
 EOF
 
 
@@ -190,7 +193,7 @@ EOF
 
 
 
-if [[ "$QUERY" != *loader.groovy ]]; then
+if [[ "$QUERY" != *loader.groovy ]] && [[ "$QUERY" != *sampler.groovy ]]; then
 cat<<EOF
 
 lidm = [:]

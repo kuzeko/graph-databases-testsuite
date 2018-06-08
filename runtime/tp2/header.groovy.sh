@@ -21,7 +21,7 @@ imports=(
 # Commands should be common -> DATABASE
 declare -A commands
 commands=(
-    ["gremlin-neo4j"]='def conf = ["node_cache_size":"100M","relationship_cache_size":"100M"]; g=new Neo4jGraph(DB_FILE, conf)'
+    ["gremlin-neo4j"]='def conf = ["node_cache_size":"1M","relationship_cache_size":"1M"]; g=new Neo4jGraph(DB_FILE, conf)'
     ["gremlin-orientdb"]='g = new OrientGraph("plocal:" + DB_FILE)'
     ["gremlin-sparksee"]='g = new SparkseeGraph(DB_FILE, "/runtime/confs/sparksee.cfg")'
     ["gremlin-titan"]='def TITAN_PROPERTIES=System.env.get("TITAN_PROPERTIES"); g=TitanFactory.open(TITAN_PROPERTIES);'
@@ -83,7 +83,7 @@ if (g == null) {
   System.err.println("graph object is not initialized")
   System.exit(1)
 }
-System.err.println("[NOW] $DATABASE  $QUERY");
+System.err.println("[NOW] $DATABASE  $QUERY $DATASET");
 EOF
 
 
@@ -103,7 +103,7 @@ if (DATASET.contains('rhino')) {
  uid_field='rhinoId'
  MAX_UID=907366737573878978
  UID_TYPE="numeric"
-} 
+}
 if (DATASET.contains('x_')) {
  uid_field='oid'
  MAX_UID=3000000
@@ -185,7 +185,7 @@ def get_random_array(n, seed) {
 
 EOF
 
-if [[ "$QUERY" != *loader.groovy ]]; then
+if [[ "$QUERY" != *loader.groovy ]] && [[ "$QUERY" != *sampler.groovy ]]; then
 cat<<EOF
 
 def lidm = [:]

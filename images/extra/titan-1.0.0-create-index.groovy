@@ -3,62 +3,65 @@ import com.thinkaurelius.titan.core.schema.SchemaAction;
 import com.thinkaurelius.titan.graphdb.database.management.ManagementSystem;
 import com.thinkaurelius.titan.core.schema.SchemaStatus;
 
+try {
+   t = System.nanoTime();
+   mgmt = graph.openManagement()
+   def indx_name = f.uid_field + '_INDEX'
+   //System.err.println("Get Property for " + f.uid_field )
+   uid_key = mgmt.getPropertyKey(f.uid_field)
 
+   //System.err.println("Create " + indx_name)
+   mgmt.buildIndex(indx_name, Vertex.class).addKey(uid_key).buildCompositeIndex();System.err.println("Commit");mgmt.commit();g.tx().commit()
 
-def TITAN_PROPERTIES=System.env.get("TITAN_PROPERTIES");
-def g=TitanFactory.open(TITAN_PROPERTIES);
-def DATASET = System.env.get("DATASET"); 
+   //System.err.print("Wait for it . . . ")
+   ManagementSystem.awaitGraphIndexStatus(graph, indx_name).timeout(60, java.time.temporal.ChronoUnit.MINUTES).call()
 
-def UID_TYPE="string"
-if (DATASET.contains('freebase')) {
- uid_field='freebaseid'
- UID_TYPE="numeric"
+   //System.err.println(" . . . done!")
+
+   //System.err.print("Reindex . . . ")
+   g.tx().rollback();mgmt = graph.openManagement();mgmt.updateIndex(mgmt.getGraphIndex(indx_name), SchemaAction.REINDEX).get();mgmt.commit()
+
+   //System.err.println("Done index")
+   exec_time = System.nanoTime() - t;
+
+} finally {
+   g.tx().rollback()
 }
-if (DATASET.contains('rhino')) {
- uid_field='rhinoId'
- UID_TYPE="numeric"
+
+INDEXABLE_ATTRIBUTE=f.uid_field
+
+result_row = [ DATABASE, DATASET, QUERY,0, ITERATION, 0, String.valueOf(exec_time),INDEXABLE_ATTRIBUTE]
+println result_row.join(',');
+
+DEBUG = System.env.get("DEBUG") != null
+
+
+try{
+  if(DEBUG){
+    System.err.println("TEST INDEX ON " + INDEXABLE_ATTRIBUTE)
+    t = System.nanoTime();
+    count1 = 0
+    for(int i=0; i < NODE_ARRAY.size(); i++){
+      NODE_ID = f.infer_type(NODE_ARRAY[i])
+      count1 += g.V().hasLabel('vertex').has(INDEXABLE_ATTRIBUTE, NODE_ID).count().next();
+    }
+    exec_time1 = System.nanoTime() - t;
+
+    System.err.println(" SEARCH NON EXIST " + INDEXABLE_ATTRIBUTE)
+    t = System.nanoTime();
+    count2 = 0
+    nEx = f.max_uid
+    for(int i=0; i < NODE_ARRAY.size(); i++){
+      nEx = f.infer_type(nEx+1)
+      count2 += g.V().hasLabel('vertex').has(INDEXABLE_ATTRIBUTE, nEx).count().next();
+    }
+    exec_time2 = System.nanoTime() - t;
+
+    result_row = [ DATABASE, DATASET, QUERY,0, ITERATION, 0, String.valueOf(exec_time1), String.valueOf(count1), String.valueOf(exec_time2), String.valueOf(count2),INDEXABLE_ATTRIBUTE]
+    println result_row.join(',');
+  }
+} catch (Exception e) {
+  e.printStackTrace()
 }
-if (DATASET.contains('x_')) {
- uid_field='oid'
- UID_TYPE="numeric"
-}
-if (DATASET.contains('social_')) {
- uid_field='oid'
- UID_TYPE="numeric"
-}
-
-mgmt = g.openManagement()
-def indx_name = uid_field + '_INDEX'
-System.err.println("Get Property for " + uid_field )
-uid_key = mgmt.getPropertyKey(uid_field)
-
-System.err.println("Create " + indx_name)
-mgmt.buildIndex(indx_name, Vertex.class).addKey(uid_key).buildCompositeIndex()
-
-System.err.println("Commit")
-mgmt.commit()
-g.tx().commit()
-
-System.err.print("Wait for it . . . ")
-//mgmt.awaitGraphIndexStatus(g, indx_name).call()
-ManagementSystem.awaitGraphIndexStatus(g, indx_name).timeout(60, java.time.temporal.ChronoUnit.MINUTES).call()
-
-System.err.println(" . . . done!")
-
-//System.err.print("Rollback . . . ")
-//mgmt.rollback();
-//System.err.print(" . . 2 . . ")
-//g.tx().rollback();
 
 
-System.err.print("Reindex . . . ")
-g.tx().rollback();mgmt = g.openManagement();mgmt.updateIndex(mgmt.getGraphIndex(indx_name), SchemaAction.REINDEX).get();mgmt.commit()
-//System.err.print("Commit . . . ")
-//System.err.println(" done! ")
-
-//System.err.print(" . . . ENABLE . . . ")
-//ManagementSystem.awaitGraphIndexStatus(g,indx_name).status(SchemaStatus.ENABLED).timeout(60, java.time.temporal.ChronoUnit.MINUTES).call()
-
-System.err.println("Done index")
-
-System.exit(0);

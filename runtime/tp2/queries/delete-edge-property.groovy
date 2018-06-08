@@ -1,9 +1,14 @@
+#META:SID=[0-10]
+
 SID = System.env.get("SID").toInteger(); 
+
 PROPERTY_NAME= "test_common_property";
+
 def execute_query(g,id,i,ORDER_j,DATABASE,DATASET,QUERY,ITERATION,OBJECT_ARRAY,SID, PROP_NAME){
 	e = g.e(id);
 	t = System.nanoTime();
 	e.removeProperty(PROP_NAME);
+
         if(!SKIP_COMMIT){
           try {
              g.commit();
@@ -14,9 +19,12 @@ def execute_query(g,id,i,ORDER_j,DATABASE,DATASET,QUERY,ITERATION,OBJECT_ARRAY,S
                                                                                                            
 	exec_time = System.nanoTime() - t;
 	after = e.map().size();
+
+        //DATABASE,DATASET,QUERY,SID,ITERATION,ORDER,TIME,OUTPUT,PARAMETER1(EDGE),PARAMETER2(PROPERTY)
 	result_row = [ DATABASE, DATASET, QUERY, String.valueOf(SID), ITERATION, String.valueOf(ORDER_j), String.valueOf(exec_time), String.valueOf(after), String.valueOf(OBJECT_ARRAY[i].source)+" -- "+OBJECT_ARRAY[i].label+" -> "+ String.valueOf(OBJECT_ARRAY[i].target), String.valueOf(PROP_NAME)];
 	println result_row.join(',');
 }
+
 if (SID == EDGE_LID_ARRAY.size()) { 
 	order_j = 1;
 	for (i in RAND_ARRAY) {
@@ -26,3 +34,5 @@ if (SID == EDGE_LID_ARRAY.size()) {
 } else {
 	 execute_query(g,EDGE_LID_ARRAY[SID],SID,0,DATABASE,DATASET,QUERY,ITERATION,EDGE_ARRAY,SID,PROPERTY_NAME);
 }
+
+//g.shutdown();

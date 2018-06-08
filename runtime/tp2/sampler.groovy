@@ -48,7 +48,12 @@ try {
 
 def lidm = [:]
 System.err.println(lids_file)
-if (!lids_file.exists()) {
+if (lids_file.exists()) {
+    System.err.println("LID Already Existing: APPEND TO FILE")
+} else {
+    System.err.println("LID NOT Existing: CREATE NEW")
+}
+
     System.err.println("Retrieving LID")
 
     System.err.println("Retrieving LID -> nodes")
@@ -74,10 +79,7 @@ if (!lids_file.exists()) {
     System.err.println(lidm)
 
     lids_file << (new JsonBuilder(lidm).toString())
-} else {
-    System.err.println("LID Already Existing: INCONSISTENT STATE")
-    System.exit(2);
-}
+
 
 NODE_LID_ARRAY = lidm.nodes_lid
 EDGE_LID_ARRAY = lidm.edges_lid
@@ -140,13 +142,13 @@ def get_nodes_lid(g, nodes) {
 }
 
 def get_edges_lid(g, edges) {
+    // System.err.println(g.E.count());
     return edges.collect { edge ->
         sidId = infer_type(edge.source);
         sid = g.V.has(uid_field, sidId).next();
-        
-        tidId =infer_type(edge.target);
+        tidId = infer_type(edge.target);
         tid = g.V.has(uid_field, tidId).next();
-        sid.outE(edge.label).as('selected').inV.retain([tid]).back('selected').next().id as String
+        sid.outE(edge.label).as('selected').inV().retain([tid]).back('selected').next().id as String
     }
 }
 

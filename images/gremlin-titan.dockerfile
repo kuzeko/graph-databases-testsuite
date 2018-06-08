@@ -1,6 +1,6 @@
 FROM java:8-jre-alpine
 
-MAINTAINER Brugnara <martin.brugnara@gmail.com>
+MAINTAINER Brugnara <mb@disi.unitn.eu>
 
 ENV TITAN_VERSION 0.5.4
 
@@ -22,7 +22,9 @@ RUN sed -i'.bak' 's@num_tokens: 4@num_tokens: 512@;  s@db/cassandra@'${TITAN_HOM
 RUN sed -i'.bak' 's@log4j-gremlin.properties@file:/runtime/confs/log4j-cassandra.properties -javaagent:'${TITAN_HOME}'/lib/jamm-0.2.5.jar @' "$TITAN_HOME/bin/gremlin.sh"
 
 # http://s3.thinkaurelius.com/docs/titan/0.5.4/bulk-loading.html
-# TODO: to enable this, schema should be declared a-priori.
+# SPEED UP LOADING : DISABLE DEFAULT-SCHEMA
+# To enable this, schema should be declared a-priori.
+# @see /extract_schema.go
 RUN printf "\nids.authority.wait-time=3000\n" >> "$TITAN_PROPERTIES" \
     && printf "\nstorage.batch-loading=true\n" >> "$TITAN_PROPERTIES" \
     && printf "\nschema.default=none\n" >> $TITAN_PROPERTIES
@@ -39,20 +41,18 @@ RUN mkdir -p $TITAN_HOME/db/cassandra/data \
 	mkdir -p $TITAN_HOME/db/cassandra/commitlog \
 	mkdir -p $TITAN_HOME/db/cassandra/saved_caches
 
-RUN grep 'db/cassandra' "$CASSANDRA_PROPERTIES"
-
 RUN apk add --update go
 
-ADD extra/extract_schema.go /
+COPY extra/extract_schema.go /
 
 COPY init/titan-${TITAN_VERSION}-init.sh /titan-init.sh
 RUN chmod 755 /titan-init.sh
 
 
-ADD extra/titan-${TITAN_VERSION}-create-schema.groovy /titan-create-schema.groovy
-ADD extra/titan-${TITAN_VERSION}-create-index.groovy  /titan-create-index.groovy
-ADD extra/titan-${TITAN_VERSION}-drop-index.groovy    /titan-drop-index.groovy
-ADD extra/titan-${TITAN_VERSION}-re-index.groovy      /titan-re-index.groovy
+COPY extra/titan-${TITAN_VERSION}-create-schema.groovy /titan-create-schema.groovy
+COPY extra/titan-${TITAN_VERSION}-create-index.groovy  /titan-create-index.groovy
+COPY extra/titan-${TITAN_VERSION}-drop-index.groovy    /titan-drop-index.groovy
+COPY extra/titan-${TITAN_VERSION}-re-index.groovy      /titan-re-index.groovy
 
 WORKDIR /runtime
 CMD ["/titan-init.sh"]

@@ -1,13 +1,19 @@
+#META:INDEX=[0-10]
+
 LABEL_TO_ADD= "test_label";
 PROPERTY_NAME= "test_specific_property";
 PROPERTY_VALUE = "test_value_";
+
+
 def execute_query(g,id_source,id_destination,i_s,i_d,ORDER_j,DATABASE,DATASET,QUERY,ITERATION,OBJECT_ARRAY,SID, LABEL, PROP_NAME, PROP_VAL) {
     from = g.v(id_source);
     to = g.v(id_destination);
+
     pmap = [:]
     pmap[PROP_NAME] = PROP_VAL
     t = System.nanoTime();
     edge_id = g.addEdge(from,to,LABEL,pmap);
+
     if(!SKIP_COMMIT){
         try {
             g.commit();
@@ -16,10 +22,14 @@ def execute_query(g,id_source,id_destination,i_s,i_d,ORDER_j,DATABASE,DATASET,QU
         }
     }
     exec_time = System.nanoTime() - t;
+
+    //DATABASE,DATASET,QUERY,SID_VALUE, ITERATION, ORDER, TIME, OUTPUT, PARAMETER1(SOURCE_NODE), PARAMETER2(DESTINATION_NODE)
     result_row = [DATABASE, DATASET, QUERY, String.valueOf(SID), ITERATION, String.valueOf(ORDER_j), String.valueOf(exec_time), edge_id, String.valueOf(OBJECT_ARRAY[i_s]),String.valueOf(OBJECT_ARRAY[i_d])];
     println result_row.join(',');
 }
+
 INDEX = System.env.get("INDEX").toInteger();
+
 if (INDEX != RAND_ARRAY.size()) {
     SID = INDEX
     DID = (INDEX + 1) % NODE_LID_ARRAY.size()
@@ -33,3 +43,5 @@ if (INDEX != RAND_ARRAY.size()) {
         order_j++;
     }
 }
+
+//g.shutdown();

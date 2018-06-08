@@ -1,12 +1,8 @@
 #!/bin/bash
 
-#
+# Maintainer: Lissandrini
 
-# Shared footer:
-#  provides utility functions, expecially for sampler.
-#
-#  Maintainer: Brugnara
-#  Require bash > 4.x
+# Provides utility functions, expecially for sampler.
 
 #Reserved for sampler
 echo "class Functs {"
@@ -29,7 +25,7 @@ public Functs(UID_TYPE, MAX_UID, UID_FIELD, MUST_CONVERT, SKIP_COMMIT) {
 
 EOF
 
-if [[ "$QUERY" == *loader.groovy ]]; then
+if [[ "$QUERY" == *loader.groovy ]]  || [[ "$QUERY" == *sampler.groovy ]]; then
 cat<<EOF
 
 // -----------------------------------------------------------------------------
@@ -92,19 +88,16 @@ def get_edges_lid(g, edges) {
 
         return edges.collect { edge ->
             def sidId = infer_type(edge.source);
-            def tidId =infer_type(edge.target);
-            System.err.print("< "+sidId + " " + tidId+ ">,"  )
-            def stime = System.currentTimeMillis()*1.0
+            def tidId = infer_type(edge.target);
+
             def e = g.V().has(uid_field, sidId).outE(edge.label).where(inV().has(uid_field, tidId)).next()
-            def etime = System.currentTimeMillis()*1.0
-            System.err.println("   " + ((etime - stime)/1000) + " secs" )
             return e.id() as String
        }
    }
 
    def eis = edges.collect { edge ->
        def sidId = infer_type(edge.source);
-       def tidId = infer_type(edge.target); 
+       def tidId = infer_type(edge.target);
        return [sidId , edge.label, tidId]
    }
 
@@ -227,4 +220,3 @@ def infer_type(number) {
 }
 
 EOF
-

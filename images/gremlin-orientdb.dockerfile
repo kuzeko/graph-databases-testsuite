@@ -49,7 +49,7 @@ EXPOSE 2480
 # Default command start the server
 # CMD ["server.sh"]
 
-ADD init/orientdb-init.sh /
+COPY init/orientdb-init.sh /
 RUN chmod 755 /orientdb-init.sh
 
 

@@ -1,6 +1,5 @@
 #META:
 
-// Shared loader:
 //  Loads a database, in .GraphSON or .xml format, into a graph server
 //   via graph object _g_ provided by header.groovy
 //  Maintainer: Brugnara
@@ -28,8 +27,3 @@ if (DEBUG) {
 GraphSONWriter.outputGraph(g,DATASET_FILE+"2",GraphSONMode.EXTENDED)
 result_row = [DATABASE, DATASET_FILE, "converter",'','','',String.valueOf(exec_time)]
 println result_row.join(',')
-
-
-
-
-

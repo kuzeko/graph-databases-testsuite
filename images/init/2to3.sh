@@ -4,6 +4,8 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+echo "WW."
+
 
 if [[ "$QUERY" == *loader.groovy ]]; then
     if [[ "$DATASET" == *.json2 ]]; then
@@ -15,7 +17,9 @@ if [[ "$QUERY" == *loader.groovy ]]; then
     if [[ "$DATASET" != *.json2 && ! -f "${DATASET}2" ]]; then
         echo "CONVERT $DATASET to Tinkerpop3 Compatible" >> ${RUNTIME_DIR}/errors
         # Uses Neo4j for the conversion
-        echo 'def DB_FILE="/srv/db"; def conf = ["node_cache_size":"100M","relationship_cache_size":"100M"]; g=new Neo4jGraph(DB_FILE, conf)'  > /tmp/loader.groovy
+
+        echo 'def DB_FILE="/srv/db"; def conf = ["node_cache_size":"1M","relationship_cache_size":"1M"]; g=new Neo4jGraph(DB_FILE, conf)'  > /tmp/loader.groovy
+        #echo 'def DB_FILE="/srv/db"; g=new Neo4jGraph(DB_FILE, conf)'  > /tmp/loader.groovy
         grep -v '^#'  ${RUNTIME_DIR}/converter.groovy  >> /tmp/loader.groovy
         echo 'System.err.println("Gremlin Done"); System.exit(0);'  >> /tmp/loader.groovy
 
@@ -30,7 +34,7 @@ if [[ "$QUERY" == *loader.groovy ]]; then
     fi
 
 else
-    echo "Aye! Only Loading!" >> ${RUNTIME_DIR}/errors
+    echo "$QUERY" "Aye! Only Loading!" >> ${RUNTIME_DIR}/errors
 fi
 
 

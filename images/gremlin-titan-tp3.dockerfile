@@ -1,10 +1,9 @@
-#FROM java:8-jre-alpine
+# Based on Debian 9
 FROM  openjdk:8
 
 MAINTAINER Lissandrini <ml@disi.unitn.eu>
 
 ENV TITAN_VERSION 1.0.0
-
 RUN apt-get -qq update && \
     apt-get -qq upgrade  -y && \
     apt-get -qq install  -y --no-install-recommends \
@@ -37,8 +36,8 @@ ENV TITAN_PROPERTIES=$TITAN_HOME/conf/titan-cassandra-embedded.properties \
 RUN rm -v ${TITAN_PROPERTIES} &&\
     rm -v ${CASSANDRA_PROPERTIES}
 
-ADD extra/titan-${TITAN_VERSION}-cassandra-embedded.properties ${TITAN_PROPERTIES}
-ADD extra/titan-${TITAN_VERSION}-cassandra.yaml ${CASSANDRA_PROPERTIES}
+COPY extra/titan-${TITAN_VERSION}-cassandra-embedded.properties ${TITAN_PROPERTIES}
+COPY extra/titan-${TITAN_VERSION}-cassandra.yaml ${CASSANDRA_PROPERTIES}
 
 
 RUN rm $TITAN_HOME/lib/logback-classic-*
@@ -48,7 +47,8 @@ RUN sed -i'.bak' 's@conf/log4j-console.properties -Dgremlin.log4j.level=\$GREMLI
  
 # http://s3.thinkaurelius.com/docs/titan/1.0.0/bulk-loading.html
 # SPEED UP LOADING : DISABLE DEFAULT-SCHEMA
-# TODO: to enable this, schema should be declared a-priori.
+# To enable this, schema should be declared a-priori.
+# @see /extract_schema.go
 RUN printf "\nids.authority.wait-time=3000\n" >> "$TITAN_PROPERTIES" \
     && printf "\nstorage.batch-loading=true\n" >> "$TITAN_PROPERTIES" \
     && printf "\nschema.default=none\n" >> $TITAN_PROPERTIES
@@ -66,25 +66,17 @@ RUN mkdir -p $TITAN_HOME/db/cassandra/data \
 	mkdir -p $TITAN_HOME/db/cassandra/commitlog \
 	mkdir -p $TITAN_HOME/db/cassandra/saved_caches
 
-
-RUN grep 'db/cassandra' "$CASSANDRA_PROPERTIES"
-
-
-ADD extra/extract_schema.go /
+COPY extra/extract_schema.go /
 RUN apt-get -qq install -y golang
 
 COPY init/titan-${TITAN_VERSION}-init.sh /titan-init.sh
 RUN chmod 755 /titan-init.sh
 
+COPY extra/dot_groovy /root/.groovy
 
-COPY extra/.groovy /root/.groovy
-
-#COPY extra/*-titan-tp3.groovy /tmp/
-#RUN  ${TITAN_HOME}/bin/gremlin.sh -e /tmp/activate-titan-tp3.groovy 
-
-ADD extra/titan-${TITAN_VERSION}-create-schema.groovy /titan-create-schema.groovy
-ADD extra/titan-${TITAN_VERSION}-create-index.groovy  /titan-create-index.groovy
-ADD extra/titan-${TITAN_VERSION}-drop-index.groovy    /titan-drop-index.groovy
+COPY extra/titan-${TITAN_VERSION}-create-schema.groovy /titan-create-schema.groovy
+COPY extra/titan-${TITAN_VERSION}-create-index.groovy  /titan-create-index.groovy
+COPY extra/titan-${TITAN_VERSION}-drop-index.groovy    /titan-drop-index.groovy
 
 WORKDIR /runtime
 CMD ["/titan-init.sh"]

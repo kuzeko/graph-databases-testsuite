@@ -5,6 +5,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 export NATIVE_LOADING=True
+#export INDEX_QUERY="/titan-create-index.groovy"
 
 # THIS IS NOT EFFECTIVE BUT WE KEEP IT
 export ADD_CP="${TITAN_HOME}/conf/log4j.properties"
@@ -18,6 +19,11 @@ if ! [[ -z ${JAVA_OPTIONS+x} ]]; then
     echo "WARN:  JAVA_OPTIONS is set but this breaks Titan's version of gremlin console! Set TITAN_JAVA_OPTS instead!" >> ${RUNTIME_DIR}/errors
     TITAN_JAVA_OPTS=$JAVA_OPTIONS
     unset JAVA_OPTIONS
+fi
+
+if [[ -z ${TITAN_JAVA_OPTS+x} ]]; then
+    echo "WARN:  TITAN_JAVA_OPTS is  NOT set. We'll get some defaults!" >> ${RUNTIME_DIR}/errors
+    export TITAN_JAVA_OPTS='-Xms1G -Xmn128M -Xmx8G'
 fi
 
 if [[ "$QUERY" == *loader.groovy ]]; then
@@ -61,9 +67,15 @@ if [[ "$QUERY" == *loader.groovy ]]; then
     if [[ -z ${USE_INDEX+x} ]]; then
          echo "No Index" >> ${RUNTIME_DIR}/errors
     else
+         ${RUNTIME_DIR}/tp3/header.groovy.sh > /tmp/index.groovy
+         grep -v '^#' /titan-create-index.groovy >> /tmp/index.groovy
+         echo "graph.close()" >> /tmp/index.groovy
+         echo "System.exit(0)" >> /tmp/index.groovy
+         cat /tmp/index.groovy
+
          echo "Creating Index..." >> ${RUNTIME_DIR}/errors
          start_time=$(date +%s)
-         gremlin.sh -e /titan-create-index.groovy 2>> "$RUNTIME_DIR/errors" 1>> "$RUNTIME_DIR/results"
+         gremlin.sh -e /tmp/index.groovy 2>> "$RUNTIME_DIR/errors" 1>> "$RUNTIME_DIR/results"
          end_time=$(date +%s)
          echo "Indexing done in " $(( ($end_time - $start_time) )) " secs" >> ${RUNTIME_DIR}/errors
     fi
@@ -89,6 +101,7 @@ if [[ "$QUERY" == *loader.groovy ]]; then
 fi
 
 
+
 . ${RUNTIME_DIR}/tp3/execute.sh
 
 
@@ -101,4 +114,6 @@ if [[ "$QUERY" == *loader.groovy ]]; then
         echo "Done!" >> ${RUNTIME_DIR}/errors
    fi
 fi
+
+
 

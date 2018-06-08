@@ -1,46 +1,25 @@
 import com.thinkaurelius.titan.core.TitanFactory;
-def TITAN_PROPERTIES=System.env.get("TITAN_PROPERTIES");
-def g=TitanFactory.open(TITAN_PROPERTIES);
-def DATASET = System.env.get("DATASET"); 
+import com.thinkaurelius.titan.hadoop.TitanIndexRepair;
 
-
-def UID_TYPE="string"
-if (DATASET.contains('freebase')) {
- uid_field='freebaseid'
- UID_TYPE="numeric"
-}
-if (DATASET.contains('rhino')) {
- uid_field='rhinoId'
- UID_TYPE="numeric"
-} 
-if (DATASET.contains('x_')) {
- uid_field='oid'
- UID_TYPE="numeric"
-}
-if (DATASET.contains('social_')) {
- uid_field='oid'
- UID_TYPE="numeric"
-}
-
+t = System.nanoTime();
 mgmt = g.getManagementSystem()
 def indx_name = uid_field + '_INDEX'
-System.err.println("Get Property for " + uid_field )
+//System.err.println("Get Property for " + uid_field )
 uid_key = mgmt.getPropertyKey(uid_field)
 
-System.err.print("Create " + indx_name + " . . . ")
+//System.err.print("Create " + indx_name + " . . . ")
 mgmt.buildIndex(indx_name, Vertex.class).addKey(uid_key).buildCompositeIndex()
 
-System.err.println(" Commit")
+//System.err.println(" Commit")
 mgmt.commit()
 g.commit()
 
 // Block until the SchemaStatus transitions from INSTALLED to REGISTERED
 registered = false
-before = System.currentTimeMillis()
-System.err.print("SchemaStatus transitions from INSTALLED to REGISTERED: ")
+//System.err.print("SchemaStatus transitions from INSTALLED to REGISTERED: ")
 while (!registered) {
     Thread.sleep(500L)
-    System.err.print(" . ")
+    //System.err.print(" . ")
 
     mgmt = g.getManagementSystem()
     idx  = mgmt.getGraphIndex(indx_name)
@@ -51,26 +30,56 @@ while (!registered) {
     }
     mgmt.rollback()
 }
-System.err.println("Index REGISTERED in " + (System.currentTimeMillis() - before) + " ms")
 
+// Run a Titan-Hadoop job to reindex (replace Murmur3 with your actual partitioner)
+pt = "org.apache.cassandra.dht.Murmur3Partitioner" // The default
+TITAN_PROPERTIES=System.env.get("TITAN_PROPERTIES");
+TitanIndexRepair.cassandraRepair(TITAN_PROPERTIES, indx_name, "", pt)
 
 // Enable the index
-System.err.println("Enable")
+//System.err.println("Enable")
 //def g=TitanFactory.open(TITAN_PROPERTIES);
-mgmt = g.getManagementSystem()
-mgmt.updateIndex(mgmt.getGraphIndex(indx_name), SchemaAction.ENABLE_INDEX);
-mgmt.commit()
+mgmt = g.getManagementSystem();mgmt.updateIndex(mgmt.getGraphIndex(indx_name), SchemaAction.ENABLE_INDEX);mgmt.commit()
+
 
 // Check the status -- should be ENABLED
-mgmt = g.getManagementSystem()
-desc = mgmt.getPropertyKey(uid_field)
-st = mgmt.getGraphIndex(indx_name).getIndexStatus(desc)
-System.err.println("Status " + st)
+mgmt = g.getManagementSystem();desc = mgmt.getPropertyKey(uid_field);st = mgmt.getGraphIndex(indx_name).getIndexStatus(desc)
+//System.err.println("Status " + st + " Done index")
+exec_time = System.nanoTime() - t;
+
+INDEXABLE_ATTRIBUTE=uid_field
+
+result_row = [ DATABASE, DATASET, QUERY,0, ITERATION, 0, String.valueOf(exec_time),INDEXABLE_ATTRIBUTE]
+println result_row.join(',');
+
+def DEBUG = System.env.get("DEBUG") != null
+
+if(DEBUG){
+  System.err.println("TEST INDEX ON " + INDEXABLE_ATTRIBUTE)
+
+  t = System.nanoTime();
+  count1 = 0
+  for(int i=0; i < NODE_ARRAY.size(); i++){
+     NODE_ID = infer_type(NODE_ARRAY[i])
+     count1 += g.V.has(INDEXABLE_ATTRIBUTE, infer_type(NODE_ID)).count();
+  }
+  exec_time1 = System.nanoTime() - t;
+
+  System.err.println(" SEARCH NON EXIST ON " + INDEXABLE_ATTRIBUTE)
+  t = System.nanoTime();
+  nEx = MAX_UID
+  count2 = 0
+  for(int i=0; i < NODE_ARRAY.size(); i++){
+    nEx = infer_type(nEx+1)
+    count2 += g.V().has(INDEXABLE_ATTRIBUTE, nEx).count();
+  }
+  exec_time2 = System.nanoTime() - t;
+
+  result_row = [ DATABASE, DATASET, QUERY,0, ITERATION, 0, String.valueOf(exec_time1), String.valueOf(count1), String.valueOf(exec_time2), String.valueOf(count2),INDEXABLE_ATTRIBUTE]
+  println result_row.join(',');
+}
 
 
-//mgmt.rollback()
-g.shutdown()
 
-System.err.println("Done index")
 
-System.exit(0);
+

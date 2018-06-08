@@ -4,14 +4,14 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-if [[ -z ${JAVA_OPTS+x} ]]; then
+if [[ -z ${JAVA_OPTIONS+x} ]]; then
 
-   echo "NO JAVA_OPTS SET TO NEO4J TP3 - SETTING DEFAULT"
-   export JAVA_OPTS='-Xms4g -Xmn128M -Xmx120g'
+   echo "WARN: NO JAVA_OPTIONS SET TO NEO4J TP3 - SETTING DEFAULT"
+   export JAVA_OPTIONS='-Xms4g -Xmn128M -Xmx120g'
 
 fi
 
-echo "JAVA_OPTS=$JAVA_OPTS"
+echo "JAVA_OPTIONS=$JAVA_OPTIONS"
 
 export NATIVE_LOADING=True
 

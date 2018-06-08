@@ -4,7 +4,6 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-
 # Additional operations required by some graph databases engine
 status_ok() {
   # Wait until given url return HTTP 200 OK
@@ -45,17 +44,31 @@ echo $CLASSPATH
 # ls -alR /var/lib/arangodb/databases >> /runtime/logs/arango.databases.log
 #fi
 
+# Clean up and prepare dirs for pid, locks, and db.
+
+# Be sure we can read and log to presisten directories
 chmod 777 ${RUNTIME_DIR}/logs
 chmod 755 ${RUNTIME_DIR}/confs
-rm -f /etc/arangodb/arangodb.pid
+
+# Be sure we can create pid file
+mkdir -p /var/run/arangodb/
+chown arangodb:arangodb /var/run/arangodb
+chmod 755 /var/run/arangodb/
+
+# Delete loading leftovers (pid and locks)
+ps fax | grep arangod
+echo "***RUN"
+ls -v /var/run/arangodb/
+rm -f /var/run/arangodb/arangodb.pid
+echo "***VAR"
+ls /var/lib/arangodb/
 rm -f /var/lib/arangodb/LOCK
 #arangod --server.disable-authentication="true" --server.disable-statistics true --daemon --pid-file /etc/arangodb/arangodb.pid -c /runtime/arangod.conf
-arangod --server.disable-authentication="true" --daemon --pid-file /etc/arangodb/arangodb.pid -c ${RUNTIME_DIR}/confs/arangod.conf
-
-
+arangod --daemon \
+	--pid-file /var/run/arangodb/arangodb.pid \
+	-c ${RUNTIME_DIR}/confs/arangod.conf
 echo 'Waiting for arangodb on localhost...'
 
-#TODO: double check path returns 200
 status_ok 'http://localhost:8529/_db/_system/_admin/aardvark/standalone.html'
 
 

@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Prepare the query to be executed and execute it.
 set -eu -o pipefail
 IFS=$'\n\t'
@@ -32,6 +33,15 @@ if [[ "$QUERY" == *loader.groovy ]]; then
   fi
 
   grep -v '^#' sampler.groovy >> /tmp/query
+elif [[ "$QUERY" == *create-index.groovy ]]  && ! [[ -z ${INDEX_QUERY+x}  ]]  ; then
+
+  if [[ ! -f "$INDEX_QUERY" ]]; then
+     (>&2 echo "QUERY: '$INDEX_QUERY' file does not exists.")
+     exit 1
+  fi
+  echo "Use Native Indexing with $INDEX_QUERY"
+  grep -v '^#' "$INDEX_QUERY" >> /tmp/query
+
 else
   if [[ ! -f "queries/$QUERY" ]]; then
     (>&2 echo "QUERY: '$QUERY' file does not exists.")
@@ -47,6 +57,9 @@ echo "System.exit(0)" >> /tmp/query
 LOG_T="$(date) $QUERY"
 echo "$LOG_T" # to log.txt
 echo "$LOG_T" >> "$RUNTIME_DIR/errors"
+
+# NOTE: use the following invocation line for memory tracing
+# /usr/bin/time -o '/runtime/memory.log' --append -f "$DATABASE,%t,%M" gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors" | grep "^$DATABASE," >> /runtime/results
 
 if [[ -z ${DEBUG+x} ]]; then
   # No debug mode

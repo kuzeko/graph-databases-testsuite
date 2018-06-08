@@ -4,6 +4,11 @@ if(ESCAPE_LABELS){
     System.err.println("All labels are being escaped: / is now __")
 }
 
+if(HASH_LABELS){
+    System.err.println("All labels are replaced with their MD5 value")
+}
+
+
 samples = [:]
 if (!samples_file.exists()) {
     System.err.println("Sampling File not Found! Creating")
@@ -33,16 +38,53 @@ if (!samples_file.exists()) {
 }
 
 
+md = MessageDigest.getInstance("MD5");
+
+
 // ESCAPE_LABEL  is For OrientDB: waiting patch fix
 // https://github.com/orientechnologies/orientdb/issues/6577
 NODE_ARRAY = samples.nodes
-EDGE_ARRAY = samples.edges.collect { edge -> [
+EDGE_ARRAY = samples.edges.collect { edge -> 
+
+   def llabel = edge.label
+   if (ESCAPE_LABELS){
+        llabel = llabel.replace("/","__")
+   } 
+
+   if(HASH_LABELS){ 
+        md.update(llabel.getBytes());
+        byte[] digest = md.digest();
+      
+        llabel = DatatypeConverter.printHexBinary(digest).toLowerCase();
+   }
+
+   return [
         source: edge.source,
         target: edge.target,
-        label: ESCAPE_LABELS ? edge.label.replace("/","__") : edge.label
+        label: llabel
     ]};
 
-LABEL_ARRAY = samples.labels.collect { label ->  ESCAPE_LABELS ? label.replace("/","__") : label }
+
+System.err.println("Escaping edges DONE!")
+
+
+LABEL_ARRAY = samples.labels.collect { label ->  
+
+   def llabel = label
+   if (ESCAPE_LABELS){
+        llabel = llabel.replace("/","__")
+   }
+
+   if(HASH_LABELS){
+        md.update(llabel.getBytes());
+        byte[] digest = md.digest();
+
+        llabel = DatatypeConverter.printHexBinary(digest).toLowerCase();
+   }
+
+    return llabel 
+}
+
 
 try {
     g.tx().commit();
@@ -56,7 +98,13 @@ try {
 
 lidm = [:]
 System.err.println(lids_file)
-if (!lids_file.exists()) {
+if (lids_file.exists()) {
+    System.err.println("LID Already Existing: APPEND TO FILE")
+} else {
+    System.err.println("LID NOT Existing: CREATE NEW")
+}
+
+
     System.err.println("Retrieving LID")
 
     System.err.println("Retrieving LID -> nodes")
@@ -82,10 +130,6 @@ if (!lids_file.exists()) {
     System.err.println(lidm)
 
     lids_file << (new JsonBuilder(lidm).toString())
-} else {
-    System.err.println("LID Already Existing: INCONSISTENT STATE")
-    System.exit(2);
-}
 
 NODE_LID_ARRAY = lidm.nodes_lid
 EDGE_LID_ARRAY = lidm.edges_lid

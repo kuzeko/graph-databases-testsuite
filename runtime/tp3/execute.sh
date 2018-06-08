@@ -28,13 +28,23 @@ if [[ "$QUERY" == *loader.groovy ]]; then
   # There is no boolean in bash
   if [[ -z ${NATIVE_LOADING+x}  ]]; then
     echo "Loading  with Gremlin"
-    grep -v '^#' loader.groovy >> /tmp/query
+    grep -v '^#' "$QUERY" >> /tmp/query
   else
     echo "Native Loading already took place"
   fi
 
   grep -v '^#' sampler.groovy >> /tmp/query
   [[ "$DATABASE" == *blazegraph ]] || echo "graph.close()" >> /tmp/query
+
+elif [[ "$QUERY" == *create-index.groovy ]]  && ! [[ -z ${INDEX_QUERY+x}  ]]  ; then
+
+  if [[ ! -f "$INDEX_QUERY" ]]; then
+     (>&2 echo "QUERY: '$INDEX_QUERY' file does not exists.")
+     exit 1
+  fi
+  echo "Use Native Indexing with $INDEX_QUERY"
+  grep -v '^#' "$INDEX_QUERY" >> /tmp/query
+
 else
   if [[ ! -f "queries/$QUERY" ]]; then
      (>&2 echo "QUERY: 'queries/$QUERY' file does not exists.")
@@ -47,12 +57,13 @@ fi
 echo "System.exit(0)" >> /tmp/query
 
 
-
-
 # Execute the query
 LOG_T="$(date) $QUERY"
 echo "$LOG_T" # to log.txt
 echo "$LOG_T" >> "$RUNTIME_DIR/errors"
+
+# NOTE: use the following invocation line for memory tracing
+# /usr/bin/time -o '/runtime/memory.log' --append -f "$DATABASE,%t,%M" gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors" | grep "^$DATABASE," >> /runtime/results
 
 if [[ -z ${DEBUG+x} ]]; then
   # No debug mode
