@@ -11,7 +11,7 @@ popd > /dev/null
 
 
 # VARS
-REPO="$SCRIPTPATH/../"
+REPO="$SCRIPTPATH"
 EPOCH=$(date +%s)
 
 #-------------------------------------------------------------------------------

@@ -12,7 +12,7 @@ RUN apt-get -qq update && \
         bash \
         zip \
         unzip \
-        gcc 
+        gcc
 
 WORKDIR /tmp
 
@@ -43,8 +43,8 @@ COPY extra/titan-${TITAN_VERSION}-cassandra.yaml ${CASSANDRA_PROPERTIES}
 RUN rm $TITAN_HOME/lib/logback-classic-*
 
 RUN sed -i'.bak' 's@db/cassandra@'${TITAN_HOME}'/db/cassandra@g' "$CASSANDRA_PROPERTIES"
-RUN sed -i'.bak' 's@conf/log4j-console.properties -Dgremlin.log4j.level=\$GREMLIN_LOG_LEVEL@file://'${TITAN_HOME}'/conf/log4j-console.properties \${TITAN_JAVA_OPTS}@' "$TITAN_HOME/bin/gremlin.sh" 
- 
+RUN sed -i'.bak' 's@conf/log4j-console.properties -Dgremlin.log4j.level=\$GREMLIN_LOG_LEVEL@file://'${TITAN_HOME}'/conf/log4j-console.properties \${TITAN_JAVA_OPTS}@' "$TITAN_HOME/bin/gremlin.sh"
+
 # http://s3.thinkaurelius.com/docs/titan/1.0.0/bulk-loading.html
 # SPEED UP LOADING : DISABLE DEFAULT-SCHEMA
 # To enable this, schema should be declared a-priori.
