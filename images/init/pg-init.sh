@@ -4,8 +4,8 @@
 #set -euo pipefail
 IFS=$'\n\t'
 
-touch ${RUNTIME_DIR}/errors
-touch ${RUNTIME_DIR}/results
+touch ${RUNTIME_DIR}/errors.log
+touch ${RUNTIME_DIR}/results.csv
 
 
 if [[ -z ${JAVA_OPTS+x} ]]; then
@@ -71,7 +71,7 @@ PGEOF
 
 
 if [[ "${QUERY}" == *loader.groovy ]] && [[ -z ${NOHASH+x} ]]; then
-   echo "PG (hashing labels for) loading $DATASET" | tee -a ${RUNTIME_DIR}/errors 
+   echo "PG (hashing labels for) loading $DATASET" | tee -a ${RUNTIME_DIR}/errors.log
 
    #SOMETIMES We need to convert dataset labels
    while read line ; do
@@ -79,8 +79,8 @@ if [[ "${QUERY}" == *loader.groovy ]] && [[ -z ${NOHASH+x} ]]; then
        echo 's@"_label":"'${line}'"@"_label":"'${md}'"''@g;' >> /tmp/replacements.txt
    done < <( cat $DATASET | tr ',' '\n' | grep -F '_label' | grep -o  '"_label":"[^"]*"'   | cut -f 2 -d':' | sed 's/"//g' | sort | uniq)
 
-   wc -l /tmp/replacements.txt  | tee -a ${RUNTIME_DIR}/errors
-   echo "PG (hashing labels for) loading $DATASET" | tee -a ${RUNTIME_DIR}/errors
+   wc -l /tmp/replacements.txt  | tee -a ${RUNTIME_DIR}/errors.log
+   echo "PG (hashing labels for) loading $DATASET" | tee -a ${RUNTIME_DIR}/errors.log
 
    DATASET_NAME=$(basename "${DATASET}")
    SAFE_DATASET="/tmp/${DATASET_NAME}_hashed"
@@ -88,7 +88,7 @@ if [[ "${QUERY}" == *loader.groovy ]] && [[ -z ${NOHASH+x} ]]; then
    # Checks
    # ls -lh $DATASET | tee -a ${RUNTIME_DIR}/errors
    # md5sum $DATASET | tee -a ${RUNTIME_DIR}/errors
-   
+
    # GO MOD
    go run /pghash.go -i "${DATASET}" -o "${SAFE_DATASET}" -r "/tmp/replacements.txt"
 
@@ -114,7 +114,7 @@ export INDEX_QUERY="/pg-create-index.groovy"
 echo "AFTER QUERY"
 
 if [[ "${QUERY}" == *loader.groovy ]] && [[ -z ${NOHASH+x} ]]; then
-   rm -v "$SAFE_DATASET" | tee -a ${RUNTIME_DIR}/errors
+   rm -v "$SAFE_DATASET" | tee -a ${RUNTIME_DIR}/errors.log
 fi
 
 exec sudo -u postgres /bin/bash - <<PGEOF

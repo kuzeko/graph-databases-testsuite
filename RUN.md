@@ -201,13 +201,16 @@ By default the `test.py` script creates 3 files:
 
   - `timeout.log`  contains informations about executions timing out.
 
-  - `runtime/errors`
+  - `runtime/errors.log`
 	Contains the stderr stream from gremlin.sh and also the info log from our scripts (we do not want to pollute the results file)
 
-  - `runtime/results`
+  - `runtime/results.csv`
 	A simil-CSV, containing the timing of the query. A first set of columns is common to all the queries, for some, follows additional fields useful for stats.
 	It is not technically a valid CSV since not all the rows have the same number of columns.
 		In debug mode it contains also all the stack trace and errors messages from java, sometime more useful than the one in errors to `docker.log`.
+
+  - `runtime/debug.log`
+    Results and debug logs.
 
 
 ## ALL CONFIGS SHOULD BE IN /runtime/confs

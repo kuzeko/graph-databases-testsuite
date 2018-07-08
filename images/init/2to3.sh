@@ -15,7 +15,7 @@ if [[ "$QUERY" == *loader.groovy ]]; then
     fi
 
     if [[ "$DATASET" != *.json2 && ! -f "${DATASET}2" ]]; then
-        echo "CONVERT $DATASET to Tinkerpop3 Compatible" >> ${RUNTIME_DIR}/errors
+        echo "CONVERT $DATASET to Tinkerpop3 Compatible" >> ${RUNTIME_DIR}/errors.log
         # Uses Neo4j for the conversion
 
         echo 'def DB_FILE="/srv/db"; def conf = ["node_cache_size":"1M","relationship_cache_size":"1M"]; g=new Neo4jGraph(DB_FILE, conf)'  > /tmp/loader.groovy
@@ -23,18 +23,18 @@ if [[ "$QUERY" == *loader.groovy ]]; then
         grep -v '^#'  ${RUNTIME_DIR}/converter.groovy  >> /tmp/loader.groovy
         echo 'System.err.println("Gremlin Done"); System.exit(0);'  >> /tmp/loader.groovy
 
-        /opt/gremlin2/bin/gremlin2.sh -e  /tmp/loader.groovy   2>> ${RUNTIME_DIR}/errors 1>> ${RUNTIME_DIR}/results
+        /opt/gremlin2/bin/gremlin2.sh -e  /tmp/loader.groovy   2>> ${RUNTIME_DIR}/errors.log 1>> ${RUNTIME_DIR}/results.csv
         DATASET="${DATASET}2"
-        echo "CONVERTED $DATASET to Tinkerpop3 " >> /runtime/errors
+        echo "CONVERTED $DATASET to Tinkerpop3 " >> /runtime/errors.log
     elif [[ "$DATASET" != *.json2 && -f "${DATASET}2" ]]; then
-        echo "${DATASET}2 ALREADY PRESENT" >> /runtime/errors
+        echo "${DATASET}2 ALREADY PRESENT" >> /runtime/errors.log
         DATASET="${DATASET}2"
     else
-        echo "$DATASET ALREADY tinkerpop3 Compatible" >> ${RUNTIME_DIR}/errors
+        echo "$DATASET ALREADY tinkerpop3 Compatible" >> ${RUNTIME_DIR}/errors.log
     fi
 
 else
-    echo "$QUERY" "Aye! Only Loading!" >> ${RUNTIME_DIR}/errors
+    echo "$QUERY" "Aye! Only Loading!" >> ${RUNTIME_DIR}/errors.log
 fi
 
 

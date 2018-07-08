@@ -60,7 +60,7 @@ echo "System.exit(0)" >> /tmp/query
 # Execute the query
 LOG_T="$(date) $QUERY"
 echo "$LOG_T" # to log.txt
-echo "$LOG_T" >> "$RUNTIME_DIR/errors"
+echo "$LOG_T" >> "$RUNTIME_DIR/errors.log"
 
 # NOTE: use the following invocation line for memory tracing
 # /usr/bin/time -o '/runtime/memory.log' --append -f "$DATABASE,%t,%M" gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors" | grep "^$DATABASE," >> /runtime/results
@@ -69,12 +69,12 @@ if [[ -z ${DEBUG+x} ]]; then
   # No debug mode
   echo "Grepping on $DATABASE,"
   #gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors" 1>> /runtime/results
-  if ! gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors" | grep "^$DATABASE," >> /runtime/results ; then echo "grep end"; fi
+  if ! gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors.log" | grep "^$DATABASE," >> "$RUNTIME_DIR/results.csv" ; then echo "grep end"; fi
 else
   echo "Running in DEBUG MODE $DEBUG"
   cat /tmp/query
-  echo "$LOG_T" >> "$RUNTIME_DIR/results"
-  gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors" 1>> "$RUNTIME_DIR/results"
+  echo "$LOG_T" >> "$RUNTIME_DIR/debug.log"
+  gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors.log" 1>> "$RUNTIME_DIR/debug.log"
 fi
 
 unset DEBUG

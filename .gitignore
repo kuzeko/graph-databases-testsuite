@@ -40,8 +40,9 @@ Icon
 timeout.log
 docker.log
 test.log
-runtime/results
-runtime/errors
+runtime/results.csv
+runtime/errors.log
+runtime/debug.log
 runtime/data
 runtime/logs/*
 

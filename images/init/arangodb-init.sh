@@ -65,8 +65,8 @@ ls /var/lib/arangodb/
 rm -f /var/lib/arangodb/LOCK
 #arangod --server.disable-authentication="true" --server.disable-statistics true --daemon --pid-file /etc/arangodb/arangodb.pid -c /runtime/arangod.conf
 arangod --daemon \
-	--pid-file /var/run/arangodb/arangodb.pid \
-	-c ${RUNTIME_DIR}/confs/arangod.conf
+  --pid-file /var/run/arangodb/arangodb.pid \
+  -c ${RUNTIME_DIR}/confs/arangod.conf
 echo 'Waiting for arangodb on localhost...'
 
 status_ok 'http://localhost:8529/_db/_system/_admin/aardvark/standalone.html'
@@ -86,7 +86,7 @@ then
   # Load nodes
   arangoimp --server.endpoint tcp://localhost:8529 --file "nodes.json" --type json --collection "V" --batch-size 10240 --create-collection true
   end_time=$(($(date +%s%N)/1000000))
-  echo  ${DATABASE},${DATASET},${QUERY},,,,$(( ($end_time - $start_time) )),native,nodes | tee -a ${RUNTIME_DIR}/results
+  echo  ${DATABASE},${DATASET},${QUERY},,,,$(( ($end_time - $start_time) )),native,nodes | tee -a ${RUNTIME_DIR}/results.csv
 
   # Create edges collection
   echo "Create edges collection"
@@ -102,7 +102,7 @@ EOF
   start_time=$(($(date +%s%N)/1000000))
   arangoimp --server.endpoint tcp://localhost:8529 --file "edges.json" --type json --collection "E" --batch-size 10240
   end_time=$(($(date +%s%N)/1000000))
-  echo  ${DATABASE},${DATASET},${QUERY},,,,$(( ($end_time - $start_time) )),native,edges | tee -a ${RUNTIME_DIR}/results
+  echo  ${DATABASE},${DATASET},${QUERY},,,,$(( ($end_time - $start_time) )),native,edges | tee -a ${RUNTIME_DIR}/results.csv
 
   rm -vf ${RUNTIME_DIR}/nodes.json ${RUNTIME_DIR}/edges.json
   echo "Done"

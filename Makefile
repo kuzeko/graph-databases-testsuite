@@ -58,7 +58,7 @@ clean: stop kill rm_dead rm_notag collect
 	#
 
 rm_log:
-	rm -fv timeout.log docker.log test.log runtime/results runtime/errors runtime/logs/*
+	rm -fv timeout.log docker.log test.log runtime/results.csv runtime/errors.log runtime/logs/* runtime/debug.log
 
 purge: stop kill rm_dead rm_notag rm_log
     #
@@ -66,9 +66,9 @@ purge: stop kill rm_dead rm_notag rm_log
 # ------------------------------------------------------------------------------
 # logs
 follow:
-	tail -f *.log runtime/errors runtime/results
+	tail -f *.log runtime/errors.log runtime/results.csv runtime/*.log
 
 follow_short:
-	tail -f runtime/errors runtime/results
+	tail -f runtime/errors.log runtime/results.csv runtime/*.log
 
 .PHONY: help rm_noname rm_notag rm_dead stop kill destroy collect clean

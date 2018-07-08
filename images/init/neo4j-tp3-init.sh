@@ -17,17 +17,17 @@ export NATIVE_LOADING=True
 
 if [[ "$QUERY" == *loader.groovy ]]; then
 
-    echo "Loading $DATASET" >> ${RUNTIME_DIR}/errors
+    echo "Loading $DATASET" >> ${RUNTIME_DIR}/errors.log
     if [[ "$DATASET" = *.json3 ]]; then
-        echo "ALREADY tinkerpop3 NEW V. $DATASET" >> ${RUNTIME_DIR}/errors
+        echo "ALREADY tinkerpop3 NEW V. $DATASET" >> ${RUNTIME_DIR}/errors.log
     elif [[ "$DATASET" != *.json2 && ! -f "${DATASET}2" ]]; then
-        echo "NOT tinkerpop3 $DATASET!" >> ${RUNTIME_DIR}/errors
+        echo "NOT tinkerpop3 $DATASET!" >> ${RUNTIME_DIR}/errors.log
         exit 2
     elif [[ "$DATASET" != *.json2 && -f "${DATASET}2" ]]; then
-        echo "USE tinkerpop3 ${DATASET}2" >> ${RUNTIME_DIR}/errors
+        echo "USE tinkerpop3 ${DATASET}2" >> ${RUNTIME_DIR}/errors.log
         DATASET="${DATASET}2"
     else
-        echo "ALREADY tinkerpop3 $DATASET" >> ${RUNTIME_DIR}/errors
+        echo "ALREADY tinkerpop3 $DATASET" >> ${RUNTIME_DIR}/errors.log
     fi
 
     ${RUNTIME_DIR}/tp3/header.groovy.sh > /tmp/loader.groovy
@@ -37,7 +37,7 @@ if [[ "$QUERY" == *loader.groovy ]]; then
 
     cat /tmp/loader.groovy
     echo "Executing tp3 loader"
-    gremlin.sh -e /tmp/loader.groovy  2>> ${RUNTIME_DIR}/errors 1>> ${RUNTIME_DIR}/results
+    gremlin.sh -e /tmp/loader.groovy  2>> ${RUNTIME_DIR}/errors.log 1>> ${RUNTIME_DIR}/results.csv
 fi
 
 

@@ -19,7 +19,7 @@ EPOCH=$(date +%s)
 echo "Collect results"
 mkdir -p "$REPO/collected/RESULTS"
 # For each database in the results
-RESULTS="$REPO/runtime/results"
+RESULTS="$REPO/runtime/results.csv"
 if [[ -f "$RESULTS" ]]; then
   echo "$RESULTS"
   if grep -c '^gremlin' "${RESULTS}" ; then
@@ -58,7 +58,7 @@ for fname in timeout docker test; do
 [[ -f "$REPO"/${fname}.log ]] && mv -f "$REPO"/${fname}.log "$RAW"
 done
 
-for fname in results errors; do
+for fname in $RESULTS errors.log debug.log; do
 [[ -f "$REPO"/runtime/${fname} ]] && mv -f "$REPO"/runtime/${fname} "$RAW"
 done
 

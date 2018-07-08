@@ -30,21 +30,21 @@ fi
 if [[ "$QUERY" == *loader.groovy ]]; then
     # TODO: refactor, gen outise $RUNTIME_DIR, rm after run
 
-    echo "OrientDB (removing slash for) loading $DATASET" | tee -a ${RUNTIME_DIR}/errors
+    echo "OrientDB (removing slash for) loading $DATASET" | tee -a ${RUNTIME_DIR}/errors.log
     DATASET_NAME=$(basename "${DATASET}")
     SAFE_DATASET="/tmp/${DATASET_NAME}_noslash.json"
 
     # sed '/\// s//__/g' "$DATASET"  > "$SAFE_DATASET"
     perl -pe "s/\//__/g" < "$DATASET" > "$SAFE_DATASET"
-    echo "Created $SAFE_DATASET" | tee -a ${RUNTIME_DIR}/errors
-    ls -lh ${SAFE_DATASET} | tee -a ${RUNTIME_DIR}/errors
+    echo "Created $SAFE_DATASET" | tee -a ${RUNTIME_DIR}/errors.log
+    ls -lh ${SAFE_DATASET} | tee -a ${RUNTIME_DIR}/errors.log
 
     # database path (/srv/db) must be the same as DB_FILE in $RUNTIME_DIR/tp2/header.groovy.sh
     if [[ -z ${MINIMUMCLUSTERS+x} ]]; then
-      echo "Disable MINIMUM CLUSTERS"  | tee -a ${RUNTIME_DIR}/errors
-      echo "CREATE DATABASE PLOCAL:/srv/db ;ALTER DATABASE minimumclusters 1 ;QUIT" | "$ORIENTDB_HOME"/bin/console.sh >> ${RUNTIME_DIR}/errors
+      echo "Disable MINIMUM CLUSTERS"  | tee -a ${RUNTIME_DIR}/errors.log
+      echo "CREATE DATABASE PLOCAL:/srv/db ;ALTER DATABASE minimumclusters 1 ;QUIT" | "$ORIENTDB_HOME"/bin/console.sh >> ${RUNTIME_DIR}/errors.log
     else
-      echo "CREATE DATABASE PLOCAL:/srv/db ;QUIT" | "$ORIENTDB_HOME"/bin/console.sh >> ${RUNTIME_DIR}/errors
+      echo "CREATE DATABASE PLOCAL:/srv/db ;QUIT" | "$ORIENTDB_HOME"/bin/console.sh >> ${RUNTIME_DIR}/errors.log
     fi
 
     if [[ -z ${NATIVE_LOADING+x} ]]; then
@@ -57,8 +57,8 @@ if [[ "$QUERY" == *loader.groovy ]]; then
         SECONDS=0
         echo "CONNECT PLOCAL:/srv/db admin admin ;IMPORT DATABASE ${SAFE_DATASET} -format=graphson ;QUIT" | time "$ORIENTDB_HOME"/bin/console.sh
         end_time=$SECONDS
-        echo  "${DATABASE},${DATASET},${QUERY},,,,${SECONDS},native" | tee -a ${RUNTIME_DIR}/results
-        echo "Done loading" >> ${RUNTIME_DIR}/errors
+        echo  "${DATABASE},${DATASET},${QUERY},,,,${SECONDS},native" | tee -a ${RUNTIME_DIR}/results.csv
+        echo "Done loading" >> ${RUNTIME_DIR}/errors.log
     fi
 fi
 
