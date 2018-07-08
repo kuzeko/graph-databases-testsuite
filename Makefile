@@ -52,7 +52,7 @@ destroy: stop rm_dead
 
 collect:
 	@echo "Collecting results"
-	.bin/collect.sh
+	./collect.sh
 
 clean: stop kill rm_dead rm_notag collect
 	#
