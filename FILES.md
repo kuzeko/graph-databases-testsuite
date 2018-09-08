@@ -39,10 +39,14 @@
     │   ├── tp2/                            # Queries for Tinkerpop2
     │   └── tp3/                            # Queries for Tinkerpop3
     │
+    ├── db_specific_queries                 # DB optimized queries
+    │   └── tp3/                            # Queries for Tinkerpop3
+    │       └── neo4j-cypher/               # Neo4j tp3 queries in cypher 
+    │
     ├── sample_data/                        # Contains sample datasets 
     ├── benchmark_example.sh                # Example, test all databases
     ├── collect.sh                          # Used by make to collect exp
-    |                                       #   results into 'collected'
+    │                                       #   results into 'collected'
     ├── settings.json                       # Which datasets and queries to run
     ├── settings_example.json               # Conf. for benchmark_example.sh
     └── test.py                             # The test runner:

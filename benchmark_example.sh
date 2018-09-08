@@ -31,3 +31,15 @@ python test.py \
   -r 3 \
   -s settings_example.json \
   -i dbtrento/gremlin-blazegraph
+
+
+# -----------------------------------------------------------------------------
+# Test DB specifc queries implementations.
+
+# FIXME: results will be reported as 'neo4j-tp3'
+python test.py \
+  -e JAVA_OPTIONS='-Xms1G -Xmn128M -Xmx120G -XX:+UseG1GC' \
+  -r 3 \
+  -i dbtrento/gremlin-neo4j-tp3 \
+  -s cypher_reduced_set.json \
+  -v "$(pwd)"/db_specific_queries/neo4j-cypher:/runtime/tp3/queries

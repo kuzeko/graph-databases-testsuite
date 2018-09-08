@@ -91,4 +91,4 @@ Martin Brugnara <mb@disi.unitn.eu> (@MartinBrugnara).
 
 
 ***Contributors***   
-Liviu Bogdan (UniTN), Allan Nielsen (UniTN).
+Liviu Bogdan (UniTN), Allan Nielsen (UniTN), Denis Gallo (UniTN).
