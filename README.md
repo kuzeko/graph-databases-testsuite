@@ -1,5 +1,14 @@
 # Graph Databases Benchmarking Suite
 
+**This repository contains the code for the following publication:**
+
+> **Beyond Macrobenchmarks: Microbenchmark-based Graph Database Evaluation**
+> 
+> *by* **Matteo Lissandrini, Martin Brugnara, Yannis Velegrakis**
+> 
+> *published in the _Proceedings of the Conference on Very Large Databases (PVLDB), 2018_*
+
+
 **Comparison of Graph Databases**  
 Graph databases (GDBs) are grounded on the concepts of graph theory: abstracting data in the form of nodes, edges and properties.
 
