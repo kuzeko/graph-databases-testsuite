@@ -8,6 +8,10 @@
 > 
 > *published in the _Proceedings of the Conference on Very Large Databases (PVLDB), 2018_*
 
+A guide to reproduce the experiments in the paper is provided in the [REPRODUCE.md](REPRODUCE.md) file.
+
+
+---
 
 **Comparison of Graph Databases**  
 Graph databases (GDBs) are grounded on the concepts of graph theory: abstracting data in the form of nodes, edges and properties.
@@ -23,7 +27,6 @@ In particular, we provide docker images for the following databases:
 
 - ArangoDB
 - Blazegraph
-- Janus
 - Neo4j (Versions 1.9, and 3.0 )
 - OrientDB
 - PostgreSQL (via sqlg)
@@ -53,7 +56,7 @@ Other may be added as explained in [SETUP.md](SETUP.md).
    # Make sure the directory exists.
      mkdir -p runtime/data
    # Provided the data.
-     cp sample_data/freebase_0000.json{,2} runtime/data/
+     cp ~/freebase_small.json{,2} runtime/data/
    ```
 
 5. Configure the experiment with the select query-set.  
@@ -88,7 +91,7 @@ Other may be added as explained in [SETUP.md](SETUP.md).
 ## Personalize your experiments
 
 
-***How to use*** the test suite: [RUN.md](RUN.md)
+**How to use** the test suite: [RUN.md](RUN.md)
 
 Insights on the **folder structure** and scripts role: [FILES.md](FILES.md)
 

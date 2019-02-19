@@ -105,8 +105,6 @@ if [[ "${QUERY}" == *loader.groovy ]] && [[ -z ${NOHASH+x} ]]; then
 fi
 
 echo "BEFORE QUERY"
-export INDEX_QUERY="/pg-create-index.groovy"
-
 
 # Run gremlin
 . ${RUNTIME_DIR}/tp3/execute.sh

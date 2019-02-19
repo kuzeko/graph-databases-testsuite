@@ -65,7 +65,7 @@ DATABASES = [
     'blazegraph',   # Uses Tp3
     'neo4j-tp3',    # Uses Tp3
     'titan-tp3',    # Uses Tp3
-    'janus-tp3',    # Uses Tp3 but needs a Tp2 file aswell
+    'janus-tp3',    # Uses Tp3
     'pg',           # NOTE: it uses its own loader (@see README).
     # leave as last
     '2to3',         # Only for conversion
@@ -217,13 +217,15 @@ def main(root):
                     try:
                         test_env = []
                         cn = None
+                        to = TIMEOUT
                         if COMMIT_SUFFIX:
                             cn = data_image + DATA_SUFFIX + COMMIT_SUFFIX
+                            to = None
                         else:
                             test_env += ['--rm']
                         test_env += query_env + meta_env
                         exec_query(root, data_image + DATA_SUFFIX, test_env,
-                                   timeout=TIMEOUT, commit_name=cn)
+                                   timeout=to, commit_name=cn)
                         TIMEOUT_COUNTER = 0
                     except subprocess.TimeoutExpired:
                         to_log.error(','.join([
@@ -468,7 +470,7 @@ def parse_arguments():
                         help='only print the docker command')
 
     parser.add_argument('-x', '--suffix', default='', help="data img suffix")
-    parser.add_argument('-c', '--commit', default='', help="commit img suffix")
+    parser.add_argument('-c', '--commit', default='', help="commit img suffix. Also disables TIMEOUT")
 
     args = parser.parse_args(sys.argv[1:])
 

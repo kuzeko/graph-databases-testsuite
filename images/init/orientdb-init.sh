@@ -6,10 +6,8 @@ IFS=$'\n\t'
 
 
 if [[ -z ${JAVA_OPTIONS+x} ]]; then
-
-   echo "NO JAVA_OPTIONS SET TO NEO4J TP3 - SETTING DEFAULT"
-   export JAVA_OPTIONS='-Xms4g -Xmn128M -Xmx120g'
-
+   echo "NO JAVA_OPTIONS SET - SETTING DEFAULT"
+   export JAVA_OPTIONS='-Xms4g -Xmx20g -XX:+UseG1GC -Dstorage.diskCache.bufferSize=102400'
 fi
 
 echo "JAVA_OPTIONS=$JAVA_OPTIONS"

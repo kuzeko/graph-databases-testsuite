@@ -5,7 +5,6 @@ set -euo pipefail
 IFS=$'\n\t'
 
 export NATIVE_LOADING=True
-#export INDEX_QUERY="/titan-create-index.groovy"
 
 # THIS IS NOT EFFECTIVE BUT WE KEEP IT
 export ADD_CP="${TITAN_HOME}/conf/log4j.properties"

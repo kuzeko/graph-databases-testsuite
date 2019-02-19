@@ -20,7 +20,6 @@
     │   ├── gremlin-2to3.dockerfile         # Uses Neo4J to convert Tp2 Data 
     │   ├── gremlin-arangodb.dockerfile
     │   ├── gremlin-blazegraph.dockerfile
-    │   ├── gremlin-janus-tp3.dockerfile
     │   ├── gremlin-neo4j-tp3.dockerfile
     │   ├── gremlin-neo4j.dockerfile
     │   ├── gremlin-orientdb.dockerfile
@@ -39,16 +38,9 @@
     │   ├── tp2/                            # Queries for Tinkerpop2
     │   └── tp3/                            # Queries for Tinkerpop3
     │
-    ├── db_specific_queries                 # DB optimized queries
-    │   └── tp3/                            # Queries for Tinkerpop3
-    │       └── neo4j-cypher/               # Neo4j tp3 queries in cypher 
-    │
-    ├── sample_data/                        # Contains sample datasets 
-    ├── benchmark_example.sh                # Example, test all databases
     ├── collect.sh                          # Used by make to collect exp
     │                                       #   results into 'collected'
-    ├── settings.json                       # Which datasets and queries to run
-    ├── settings_example.json               # Conf. for benchmark_example.sh
+    ├── settings/                           # Settings folder
     └── test.py                             # The test runner:
                                             # Spanws the Docker containers
                                             # Runs the queries

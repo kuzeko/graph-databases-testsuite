@@ -50,6 +50,7 @@ def lidm = [:]
 System.err.println(lids_file)
 if (lids_file.exists()) {
     System.err.println("LID Already Existing: APPEND TO FILE")
+    lids_file << '\n'
 } else {
     System.err.println("LID NOT Existing: CREATE NEW")
 }

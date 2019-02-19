@@ -1,4 +1,0 @@
-Le query BFS non saranno testate perchè producono risultati diversi da quelle gremlin.
-Non è sicuro se queste siano sbagliate o quelle gremlin dato che sui nodi in freebase
-è provato che BFS-both in gremlin conta 12 nodi quando in realtà ce ne sono solo 10 
-in tutto il dataset. Il problema dovrebbe essere nel fatto che non è chiaro il distinct

@@ -5,7 +5,6 @@ set -euo pipefail
 IFS=$'\n\t'
 
 export NATIVE_LOADING=1
-#export INDEX_QUERY="/titan-create-index.groovy"
 
 if ! [[ -z ${JAVA_OPTIONS+x} ]]; then
     echo "WARN:  JAVA_OPTIONS is set but this breaks Titan's version of gremlin console! Set TITAN_JAVA_OPTS instead!" >> ${RUNTIME_DIR}/errors.log

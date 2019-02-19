@@ -163,22 +163,21 @@ if (DATASET.contains('freebase')) {
  UID_FIELD='freebaseid'
  MAX_UID=4611686018428691658
  UID_TYPE="numeric"
-}
-if (DATASET.contains('rhino')) {
+} else if (DATASET.contains('rhino')) {
  UID_FIELD='rhinoId'
  MAX_UID=907366737573878978
  UID_TYPE="numeric"
-}
-if (DATASET.contains('x_')) {
+} else if (DATASET.contains('ldbc')) {
+ UID_FIELD='oid'
+ MAX_UID=400000
+ UID_TYPE="numeric"
+} else {
+ // DATASET.contains('x_')
  UID_FIELD='oid'
  MAX_UID=3000000
  UID_TYPE="numeric"
 }
-if (DATASET.contains('social_')) {
- UID_FIELD='oid'
- MAX_UID=400000
- UID_TYPE="numeric"
-}
+
 
 
 f = new Functs(UID_TYPE, MAX_UID, UID_FIELD, MUST_CONVERT, SKIP_COMMIT)

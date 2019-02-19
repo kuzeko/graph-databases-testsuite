@@ -33,14 +33,15 @@ if [[ "$QUERY" == *loader.groovy ]]; then
   fi
 
   grep -v '^#' sampler.groovy >> /tmp/query
-elif [[ "$QUERY" == *create-index.groovy ]]  && ! [[ -z ${INDEX_QUERY+x}  ]]  ; then
+elif [[ "$QUERY" == *index*.groovy ]]  && ! [[ -z ${INDEX_QUERY_PREFIX+x}  ]]  ; then
 
-  if [[ ! -f "$INDEX_QUERY" ]]; then
-     (>&2 echo "QUERY: '$INDEX_QUERY' file does not exists.")
+  IQ="queries/${INDEX_QUERY_PREFIX}${QUERY}"
+  if [[ ! -f "$IQ" ]]; then
+     (>&2 echo "QUERY: '$IQ' file does not exists.")
      exit 1
   fi
-  echo "Use Native Indexing with $INDEX_QUERY"
-  grep -v '^#' "$INDEX_QUERY" >> /tmp/query
+  echo "Use Native Indexing with $IQ"
+  grep -v '^#' "$IQ" >> /tmp/query
 
 else
   if [[ ! -f "queries/$QUERY" ]]; then
@@ -69,7 +70,7 @@ if [[ -z ${DEBUG+x} ]]; then
 else
   echo "Running in DEBUG MODE $DEBUG"
   cat /tmp/query
-  echo "$LOG_T" >> "$RUNTIME_DIR/results.csv"
+  echo "$LOG_T" >> "$RUNTIME_DIR/debug.log"
   gremlin.sh -e /tmp/query 2>> "$RUNTIME_DIR/errors.log" 1>> "$RUNTIME_DIR/debug.log"
 fi
 

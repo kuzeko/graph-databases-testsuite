@@ -4,11 +4,15 @@ MAINTAINER Brugnara <mb@disi.unitn.eu>
 
 ENV TITAN_VERSION 0.5.4
 
-RUN apk add --update linux-pam bash gcc
+RUN apk add --update linux-pam bash gcc ca-certificates openssl
 
-RUN wget -q -O /tmp/titan.zip http://s3.thinkaurelius.com/downloads/titan/titan-$TITAN_VERSION-hadoop2.zip
 RUN mkdir -p /opt
-RUN unzip -q /tmp/titan.zip -d /opt && rm /tmp/titan.zip
+RUN cd /tmp \
+    && wget https://disi.unitn.it/~brugnara/data/pkg/titan-${TITAN_VERSION}-hadoop2.zip \
+    && wget https://disi.unitn.it/~brugnara/data/pkg/titan-${TITAN_VERSION}-hadoop2.zip.md5 \
+    && md5sum -c titan-${TITAN_VERSION}-hadoop2.zip.md5 \
+    && unzip -q titan-${TITAN_VERSION}-hadoop2.zip -d /opt \
+    && rm /tmp/*hadoop*
 
 ENV TITAN_HOME /opt/titan-$TITAN_VERSION-hadoop2
 ENV PATH $TITAN_HOME/bin:$PATH
@@ -50,9 +54,10 @@ RUN chmod 755 /titan-init.sh
 
 
 COPY extra/titan-${TITAN_VERSION}-create-schema.groovy /titan-create-schema.groovy
-COPY extra/titan-${TITAN_VERSION}-create-index.groovy  /titan-create-index.groovy
 COPY extra/titan-${TITAN_VERSION}-drop-index.groovy    /titan-drop-index.groovy
 COPY extra/titan-${TITAN_VERSION}-re-index.groovy      /titan-re-index.groovy
+
+ENV INDEX_QUERY_PREFIX="titan-0.5.4-"
 
 WORKDIR /runtime
 CMD ["/titan-init.sh"]

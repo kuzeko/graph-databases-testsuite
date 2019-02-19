@@ -98,22 +98,21 @@ if (DATASET.contains('freebase')) {
  uid_field='freebaseid'
  MAX_UID=4611686018428691658
  UID_TYPE="numeric"
-}
-if (DATASET.contains('rhino')) {
+} else if (DATASET.contains('rhino')) {
  uid_field='rhinoId'
  MAX_UID=907366737573878978
  UID_TYPE="numeric"
-}
-if (DATASET.contains('x_')) {
+} else if (DATASET.contains('ldbc')) {
+ uid_field='oid'
+ MAX_UID=400000
+ UID_TYPE="numeric"
+} else {
+ // (DATASET.contains('x_')) 
  uid_field='oid'
  MAX_UID=3000000
  UID_TYPE="numeric"
 }
-if (DATASET.contains('social_')) {
- uid_field='oid'
- MAX_UID=400000
- UID_TYPE="numeric"
-}
+
 
 
 // -- MUST_CONVERT

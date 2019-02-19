@@ -1,7 +1,7 @@
 FROM  openjdk:8
 LABEL authors="Brugnara <mb@disi.unitn.eu>, Matteo Lissandrini <ml@disi.unitn.eu>"
 
-RUN gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys CD8CB0F1E0AD5B52E93F41E7EA93F5E56E751E9B B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8 7FCC7D46ACCC4CF8
+# RUN gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys CD8CB0F1E0AD5B52E93F41E7EA93F5E56E751E9B B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8 7FCC7D46ACCC4CF8
 
 ENV GREMLIN3_TAG 3.2.9
 ENV GREMLIN3_HOME /opt/gremlin
@@ -31,11 +31,10 @@ RUN apt-get update && \
 
 # --> fixing missing libssl1.0.0
 ENV LIBSSL_DEB libssl1.0.0_1.0.1t-1+deb7u4_amd64.deb
-ENV LIBSSL_URL http://security.debian.org/debian-security/pool/updates/main/o/openssl/${LIBSSL_DEB}
-RUN wget ${LIBSSL_URL} && \
-    dpkg -i ${LIBSSL_DEB} && \
+# ENV LIBSSL_URL http://security.debian.org/debian-security/pool/updates/main/o/openssl/${LIBSSL_DEB}
+COPY extra/pkg/$LIBSSL_DEB .
+RUN dpkg -i ${LIBSSL_DEB} && \
     rm -f ${LIBSSL_DEB}
-
 
 # Postgresql, heavily inspired (copied) from:
 # https://github.com/docker-library/postgres/blob/54053ad27ac099abff3d4964bf7460fb9c541d5d/9.6/Dockerfile
@@ -45,10 +44,10 @@ RUN groupadd -r postgres --gid=999 && useradd -r -g postgres --uid=999 postgres
 RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
-RUN set -ex; \
-    key='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8'; \
-    gpg --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg; \
-    apt-key list
+# RUN set -ex; \
+#     key='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8'; \
+#     gpg --export "$key" > /etc/apt/trusted.gpg.d/postgres.gpg; \
+#     apt-key list
 
 ENV PG_MAJOR 9.6
 #ENV PG_VERSION 9.6.3-1.pgdg80+1
@@ -56,9 +55,10 @@ ENV PG_MAJOR 9.6
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ jessie-pgdg main' $PG_MAJOR > /etc/apt/sources.list.d/pgdg.list
 
 RUN apt-get update \
-    && apt-get install -y postgresql-common \
+
+    && apt-get install -y --allow-unauthenticated postgresql-common \
     && sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf \
-    && apt-get install -y \
+    && apt-get install -y --allow-unauthenticated \
         postgresql-$PG_MAJOR \
         postgresql-contrib-$PG_MAJOR \
     && rm -rf /var/lib/apt/lists/*
@@ -95,9 +95,8 @@ ADD libs/apache-tinkerpop-gremlin-console-${GREMLIN3_TAG}-bin.tgz /opt
 RUN ln -s /opt/apache-tinkerpop-gremlin-console-${GREMLIN3_TAG} ${GREMLIN3_HOME}
 
 WORKDIR /tmp
-COPY extra/dot_groovy 			/root/.groovy
-COPY extra/*-pg.groovy 			/tmp/
-COPY extra/pg-create-index.groovy  	/pg-create-index.groovy
+COPY extra/dot_groovy           /root/.groovy
+COPY extra/*-pg.groovy          /tmp/
 
 RUN  ${GREMLIN3_HOME}/bin/gremlin.sh -e /tmp/install-pg.groovy && \
      rm -vf ${GREMLIN3_HOME}/lib/groovy-swing-2.4.*.jar && \
@@ -109,6 +108,8 @@ COPY init/pg-init.sh /
 RUN chmod 777 /pg-init.sh
 
 COPY extra/pg-label-hash.go /pghash.go
+
+ENV INDEX_QUERY_PREFIX='pg-'
 
 # standard port
 #EXPOSE 9999

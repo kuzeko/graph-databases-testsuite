@@ -51,3 +51,6 @@ runtime/presampled
 
 # Ignoring COLLECTED, use `git add -f` when really want to add them.
 COLLECTED
+collected
+
+vldb19_sleepy.sh

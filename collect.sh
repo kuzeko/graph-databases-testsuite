@@ -58,7 +58,7 @@ for fname in timeout docker test; do
 [[ -f "$REPO"/${fname}.log ]] && mv -f "$REPO"/${fname}.log "$RAW"
 done
 
-for fname in $RESULTS errors.log debug.log; do
+for fname in results.csv errors.log debug.log; do
 [[ -f "$REPO"/runtime/${fname} ]] && mv -f "$REPO"/runtime/${fname} "$RAW"
 done
 

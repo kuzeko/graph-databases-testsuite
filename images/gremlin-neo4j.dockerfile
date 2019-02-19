@@ -7,9 +7,6 @@ ENV GREMLIN_TAG=2.6.0 \
     PATH=/opt/gremlin/bin:$PATH \
     GREMLIN_HOME=/opt/gremlin
 
-#    curl -L -o /tmp/gremlin.zip \
-#        tinkerpop.com/downloads/gremlin/gremlin-groovy-${GREMLIN_TAG}.zip && \
-
 ADD libs/gremlin-groovy-${GREMLIN_TAG}.tgz /opt
 RUN ln -s /opt/gremlin-groovy-${GREMLIN_TAG} /opt/gremlin
 
