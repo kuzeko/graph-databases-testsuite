@@ -191,6 +191,7 @@ To extract statistical information regarding dataset and images size data, use t
 # Dataset size on disk
 du -s runtime/data/*.json2 | sed 's@runtime/data/@@' | sed 's@\.json2$@@' | sort -n > notebooks/datasets.tsv
 docker images --format "{{.Repository}},{{.Size}}" | grep 'gremlin-' | grep 'json2,' | sed 's@dbtrento/@@' > notebooks/images.csv
+docker images --format "{{.Repository}},{{.Size}}" | grep 'gremlin-' | grep -v '_' | sed 's@dbtrento/@@' >> notebooks/images.csv 
 ```
 
 The resulting files will be then processed by the provided python notebook used to produce charts.
