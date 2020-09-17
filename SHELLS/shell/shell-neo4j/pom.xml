@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>shell</artifactId>
+    <groupId>com.graphbenchmark</groupId>
+    <version>2.0-alpha</version>
+  </parent>
+
+  <artifactId>shell-neo4j</artifactId>
+  <name>shell-neo4j</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <archive>
+              <manifest>
+                  <mainClass>com.graphbenchmark.shell.neo4j.Neo4jShell</mainClass>
+              </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>gremlin-core</artifactId>
+      <version>3.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>neo4j-gremlin</artifactId>
+      <version>3.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+      <version>0.9-3.4.0</version> <!-- Watch out for 3.4.0 vs 3.4.2 -->
+    </dependency>
+  </dependencies>
+
+</project>

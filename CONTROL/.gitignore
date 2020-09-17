@@ -1,0 +1,8 @@
+.venv
+runtime
+__pycache__
+*.toml
+*.csv
+
+Pipfile
+Pipfile.lock
