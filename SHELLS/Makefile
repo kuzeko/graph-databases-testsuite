@@ -20,16 +20,6 @@ $(MODULES): dist ## Build a single shell
 	@time mvn -pl shell/shell-$@ -am package
 	@cp -v shell/shell-$@/target/shell-*-with-dependencies.jar ./dist
 
-.sqlg:
-	git clone --depth=1 https://github.com/pietermartin/sqlg.git .sqlg
-	cd .sqlg && \
-		mvn -pl sqlg-core -am install && \
-		mvn -pl sqlg-postgres-parent/sqlg-postgres-dialect -am install
-
-sqlgpg: .sqlg
-	@time mvn -pl shell/shell-$@ -am package
-	@cp -v shell/shell-$@/target/shell-*-with-dependencies.jar ./dist
-
 utils: ## Build benchmark utilities (e.g. dataset sanitizer)
 	@time mvn -pl utils -am package
 	@cp -v utils/target/utils-*-jar-with-dependencies.jar  ./dist

@@ -61,29 +61,16 @@ RUN set -eux; \
     gpgconf --kill all; \
     rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
     chmod +x /usr/local/bin/gosu; \
+    # https://cwiki.apache.org/confluence/display/CASSANDRA2/DebianPackaging
+    wget -qO- https://www.apache.org/dist/cassandra/KEYS | apt-key add - ;\
     apt-mark auto '.*' > /dev/null; \
     apt-mark manual $savedAptMark > /dev/null; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     gosu nobody true
 
-# https://wiki.apache.org/cassandra/DebianPackaging#Adding_Repository_Keys
-ENV GPG_KEYS \
-# gpg: key 0353B12C: public key "T Jake Luciani <jake@apache.org>" imported
-    514A2AD631A57A16DD0047EC749D6EEC0353B12C \
-# gpg: key FE4B2BDA: public key "Michael Shuler <michael@pbandjelly.org>" imported
-    A26E528B271F19B9E5D8E19EA278B781FE4B2BDA \
-    E91335D77E3E87CB
-RUN set -eux; \
-    export GNUPGHOME="$(mktemp -d)"; \
-    for key in $GPG_KEYS; do \
-        gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
-    done; \
-    gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/cassandra.gpg; \
-    command -v gpgconf && gpgconf --kill all || :; \
-    rm -rf "$GNUPGHOME"; \
-    apt-key list
 
-ENV CASSANDRA_VERSION 3.11.7
+ENV CASSANDRA_VERSION 3.11.10
+
 
 RUN set -eux; \
     \
