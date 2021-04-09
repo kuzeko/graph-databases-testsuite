@@ -27,6 +27,9 @@ log_lvls = {
     'DEBUG':    logging.DEBUG,
 }
 
+# volume mounting options
+VOPT = lambda opt: opt
+
 
 def fatal(*args, **kwargs):
     log.fatal(*args, **kwargs)
@@ -35,7 +38,8 @@ def fatal(*args, **kwargs):
 
 @click.group()
 @click.option('--log_level', type=click.Choice(list(log_lvls.keys())), default='DEBUG')
-def main(log_level):
+@click.option('--selinux', is_flag=True, help='Enable support for SELinux.')
+def main(log_level, selinux):
     level = log_lvls[log_level]
     log.setLevel(level)
 
@@ -44,7 +48,14 @@ def main(log_level):
     formatter = logging.Formatter('%(asctime)s| %(levelname)-8s - %(message)s', '%H:%M:%S')
     handler.setFormatter(formatter)
     log.addHandler(handler)
-    return log
+
+    if selinux:
+        global VOPT
+        log.info('Enabling support for SELinux, labeling shells and runtime folder.')
+        # NOTE: it should be enough to do this just once,
+        #  but we prefer avoiding 'check and set' logic and do it everytime.
+        # https://docs.docker.com/storage/bind-mounts/#configure-the-selinux-label
+        VOPT = lambda opt: f'{opt},z'
 
 
 @main.command()
@@ -152,8 +163,8 @@ def generate_config(config, dataset_dir=None, shell_dir=None, runtime_dir=None):
         if log.getEffectiveLevel() <= logging.WARNING:
             args += ['-d']
         cnt = client.containers.run(conf['databases'][db]["image"], args, volumes={
-            shell: {'bind': '/shell.jar', 'mode': 'ro'},
-            runtime_dir: {'bind': '/runtime', 'mode': 'rw'},
+            shell: {'bind': '/shell.jar', 'mode': VOPT('ro')},
+            runtime_dir: {'bind': '/runtime', 'mode': VOPT('rw')},
         }, detach=True)
 
         data = json.loads(grep_last_json(cexec_must(cnt, timeout=120)))
@@ -377,13 +388,13 @@ def run_benchmark(config, runtime_dir, shell_dir, results, data_suffix, commit_s
             shell = get_shell(database, shell_dir)
 
             vols = {
-                shell: {'bind': '/shell.jar', 'mode': 'ro'},
-                runtime_dir: {'bind': '/runtime/', 'mode': 'rw'},
+                shell: {'bind': '/shell.jar', 'mode': VOPT('ro')},
+                runtime_dir: {'bind': '/runtime/', 'mode': VOPT('rw')},
             }
 
             # Mount dataset iif outside the runtime data directory
             if not ds['path'].startswith('/runtime/data/'):
-                vols[ds['path']] = {'bind': ds['path'], 'mode': 'ro'}
+                vols[ds['path']] = {'bind': ds['path'], 'mode': VOPT('ro')}
 
             # Check if img for datase-sample exists
             data_image = f'data.{DOMAIN}/{database}_{ds_name}_{conf["sample_id"]}{data_suffix}'.replace(' ', '-')
