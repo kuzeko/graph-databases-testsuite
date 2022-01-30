@@ -3,7 +3,8 @@ help: ## Print this help message
 	@grep -E '^[a-zA-Z0-9$$()_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .venv: ## Prepare python virtual env
-	virtualenv -p python3 .venv
+	# OLD syntax virtualenv -p python3 .venv
+	python3 -m venv .venv
 	source .venv/bin/activate && pip install -r requirements.txt
 
 # ------------------------------------------------------------------------------
