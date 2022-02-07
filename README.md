@@ -16,6 +16,30 @@ cd CONTROL
 python control.py run-benchmark --config conf.toml -r ../runtime
 ```
 
+# Step by step targeted installation
+
+*Assuming we wanto to run the benchmark only for `neo4j`*
+
+```bash
+git clone https://github.com/kuzeko/graph-databases-testsuite.git graphbenchmark
+
+cd graphbenchmark
+cd IMAGES
+make neo4j.dockerfile
+
+cd ..
+cd SHELLS
+make all
+
+cd ..
+
+cd CONTROL
+make .venv
+source .venv/bin/activate 
+
+```
+
+
 # Datasets
 Download: [Mirror 1](http://disi.unitn.it/~brugnara/data/GraphDatabaseComparison_BrugnaraLV_VLDBJ.tgz)
 MD5:  3be624ed569b8b55316a80e6bd7600f1 

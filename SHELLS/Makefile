@@ -6,6 +6,7 @@ help: ## Print this help message
 
 #MODULES := $(shell set -x; mvn help:evaluate -Dexpression=project.modules | grep -e 'shell-' | grep -e 'SKIPPED' | awk -F' ' '{print $2}' | awk -F '-' '{print $2}')
 
+
 all: clean dist	## Build all shells
 	@time mvn package
 	@cp -v shell/*/target/shell-*-with-dependencies.jar dist
