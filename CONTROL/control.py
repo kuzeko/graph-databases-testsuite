@@ -17,6 +17,7 @@ from requests.exceptions import ReadTimeout
 
 DOMAIN = 'graphbenchmark.com'
 IMG_VERSION = ':latest'
+DB_LIST = ["orientdb", "janusgraph", "neo4j", "arangodb", "sqlgpg"]
 
 log = logging.getLogger(__name__)
 log_lvls = {
@@ -66,10 +67,26 @@ def main(log_level, selinux):
               required=False, default='../SHELLS/dist', help="Direcotory containing the compiled shells")
 @click.option('-r', '--runtime_dir', type=click.Path(exists=True, file_okay=False, resolve_path=True),
               required=True, help="Runtime directory")
-def generate_config(config, dataset_dir=None, shell_dir=None, runtime_dir=None):
+@click.option('--database', multiple=True,
+              required=False, default=DB_LIST, help="List of databases for which to instantiate the configuration")
+def generate_config(config, dataset_dir=None, shell_dir=None, runtime_dir=None, database=DB_LIST):
     log.info("Genereting default config for current site")
 
     client = docker.from_env()
+    db_confs = {
+            "orientdb": {
+                'image': "graphbenchmark.com/orientdb:latest",
+                'jvm_opts': "-XX:+UseG1GC -XX:MaxDirectMemorySize=512m",
+            },
+
+            "neo4j": {'image': "graphbenchmark.com/neo4j:latest"},
+            "janusgraph": {'image': "graphbenchmark.com/janusgraph:latest"},
+
+            "arangodb": {'image': "graphbenchmark.com/arangodb:latest"},
+            "sqlgpg": {'image': "graphbenchmark.com/sqlgpg:latest"},
+        }
+
+
     conf = {
         # Default sampling rules are compatible with tinkerpop-modern_mod.json
         'sampling': {
@@ -91,18 +108,7 @@ def generate_config(config, dataset_dir=None, shell_dir=None, runtime_dir=None):
         # },
 
         # TODO: consider database specific ENV
-        'databases': {
-            "orientdb": {
-                'image': "graphbenchmark.com/orientdb:latest",
-                'jvm_opts': "-XX:+UseG1GC -XX:MaxDirectMemorySize=512m",
-            },
-
-            "neo4j": {'image': "graphbenchmark.com/neo4j:latest"},
-            "janusgraph": {'image': "graphbenchmark.com/janusgraph:latest"},
-
-            "arangodb": {'image': "graphbenchmark.com/arangodb:latest"},
-            "sqlgpg": {'image': "graphbenchmark.com/sqlgpg:latest"},
-        },
+        'databases': { _n : _c for _n, _c in  db_confs.items() if _n in database },
         'datasets': {},
         'queries': [],
         'warmup': [],

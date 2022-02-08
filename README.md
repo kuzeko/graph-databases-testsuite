@@ -3,7 +3,21 @@ Version 2.0.1
 # Website
 https://graphbenchmark.com
 
+# Requirements
+
+
+This project requires:
+
+  - `python >= 3.7` 
+  - `python3-venv`
+  - `docker` 
+  - `jdk`
+  - `maven`
+  - `make`  
+
+
 # Quick Start
+
 ```bash
 git clone https://github.com/kuzeko/graph-databases-testsuite.git graphbenchmark
 cd graphbenchmark
@@ -28,15 +42,11 @@ cd IMAGES
 make neo4j.dockerfile
 
 cd ..
-cd SHELLS
-make all
 
-cd ..
-
-cd CONTROL
-make .venv
-source .venv/bin/activate 
-
+make shells
+make control
+make runtime
+make conf_neo4j
 ```
 
 
@@ -53,7 +63,6 @@ air-routes | 3742 | 57K  | 4  | 2   | 15  | 1
 
 # In details
 ## Bootstrap
-This project requires `python >= 3.7`, `virtualenv`, and `docker`, `jdk`, `maven`, `make`.  
 To bootstrap the project execute `make init`,
 this will perform the following actions:
 

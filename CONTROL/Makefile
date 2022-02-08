@@ -8,6 +8,7 @@ help: ## Print this help message
 	# OLD syntax virtualenv -p python3 .venv
 	rm -rf .venv
 	$(SYSTEM_PYTHON) -m venv .venv
+	.venv/bin/python -m pip install wheel
 	.venv/bin/python -m pip install -r requirements.txt
 
 # ------------------------------------------------------------------------------
