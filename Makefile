@@ -25,7 +25,7 @@ runtime: ## boostrap experimental env
 		mkdir -vp runtime/logs && \
 		mkdir -vp runtime/samples && \
 		mkdir -vp runtime/schemas && \
-		cp -v ../SHELLS/common/src/main/resources/tinkerpop-modern_mod.json runtime/data/ &&
+		cp -v ../SHELLS/common/src/main/resources/tinkerpop-modern_mod.json runtime/data/ && \
 		cd ..
 
 

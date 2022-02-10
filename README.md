@@ -23,7 +23,7 @@ git clone https://github.com/kuzeko/graph-databases-testsuite.git graphbenchmark
 cd graphbenchmark
 
 # Build everything and create sample config
-make init
+make all
 
 # Run experiments
 cd CONTROL
